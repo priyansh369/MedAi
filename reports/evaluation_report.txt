@@ -1,0 +1,52 @@
+MEDICAL TEXT CLASSIFICATION USING NLP - MODEL EVALUATION REPORT
+======================================================================
+
+1. OVERALL METRICS COMPARISON:
+             Model Name  Accuracy  Macro Precision  Macro Recall  Macro F1  Weighted Precision  Weighted Recall  Weighted F1
+Multinomial Naive Bayes  0.588643         0.582056      0.601379  0.589860            0.580410         0.588643     0.582237
+    Logistic Regression  0.567175         0.573750      0.540002  0.552225            0.568822         0.567175     0.564751
+
+
+2. MULTINOMIAL NAIVE BAYES DETAILS:
+                                 precision    recall  f1-score   support
+
+                      neoplasms     0.6826    0.7678    0.7227       633
+      digestive system diseases     0.5123    0.5585    0.5344       299
+        nervous system diseases     0.5761    0.5506    0.5631       385
+        cardiovascular diseases     0.6431    0.7148    0.6770       610
+general pathological conditions     0.4963    0.4152    0.4521       961
+
+                       accuracy                         0.5886      2888
+                      macro avg     0.5821    0.6014    0.5899      2888
+                   weighted avg     0.5804    0.5886    0.5822      2888
+
+Confusion Matrix:
+True \ Pred                       [ 1] [ 2] [ 3] [ 4] [ 5] 
+-----------------------------------------------------------
+[1] neoplasms                       486    31    23    13    80 
+[2] digestive system diseases        36   167     4     9    83 
+[3] nervous system diseases          26     8   212    29   110 
+[4] cardiovascular diseases           9     6    27   436   132 
+[5] general pathological conditions  155   114   102   191   399 
+
+2. LOGISTIC REGRESSION DETAILS:
+                                 precision    recall  f1-score   support
+
+                      neoplasms     0.6865    0.7299    0.7075       633
+      digestive system diseases     0.5070    0.3645    0.4241       299
+        nervous system diseases     0.5661    0.4338    0.4912       385
+        cardiovascular diseases     0.6474    0.6443    0.6459       610
+general pathological conditions     0.4617    0.5276    0.4925       961
+
+                       accuracy                         0.5672      2888
+                      macro avg     0.5738    0.5400    0.5522      2888
+                   weighted avg     0.5688    0.5672    0.5648      2888
+
+Confusion Matrix:
+True \ Pred                       [ 1] [ 2] [ 3] [ 4] [ 5] 
+-----------------------------------------------------------
+[1] neoplasms                       462    20    20    14   117 
+[2] digestive system diseases        39   109     4     7   140 
+[3] nervous system diseases          31     4   167    24   159 
+[4] cardiovascular diseases          14     5    23   393   175 
+[5] general pathological conditions  127    77    81   169   507 

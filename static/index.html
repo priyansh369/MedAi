@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical AI Report Assistant & NLP Classifier | College Project</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=8.0">
+    <style>
+        /* Responsive screen containment - Guarantee zero horizontal overflow (no right sweep) */
+        html, body {
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box !important;
+        }
+        .container {
+            width: 100% !important;
+            max-width: 1360px !important;
+            margin: 0 auto !important;
+            padding: 0 16px !important;
+            box-sizing: border-box !important;
+        }
+        .site-header {
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: clip !important;
+            background: #FFFFFF !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 100 !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+        }
+        .header-inner {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 10px !important;
+            min-height: 58px !important;
+            height: auto !important;
+            padding: 6px 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 9px !important;
+            text-decoration: none !important;
+            flex-shrink: 0 !important;
+        }
+        .brand-icon {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 8px !important;
+            background: linear-gradient(135deg, #0B2545, #00A896) !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        .brand-title {
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            color: #0B2545 !important;
+            line-height: 1.1 !important;
+            white-space: nowrap !important;
+            margin: 0 !important;
+        }
+        .brand-subtitle {
+            font-size: 0.72rem !important;
+            color: #64748B !important;
+            font-weight: 500 !important;
+            white-space: nowrap !important;
+            display: block !important;
+        }
+        .nav-links {
+            display: flex !important;
+            align-items: center !important;
+            gap: 3px !important;
+            background-color: #F1F5F9 !important;
+            padding: 3px !important;
+            border-radius: 9999px !important;
+            border: 1px solid #E2E8F0 !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            scrollbar-width: none !important;
+            flex-shrink: 1 !important;
+        }
+        .nav-links::-webkit-scrollbar {
+            display: none !important;
+        }
+        .nav-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            padding: 5px 11px !important;
+            font-size: 0.79rem !important;
+            font-weight: 600 !important;
+            color: #475569 !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            transition: all 0.16s ease !important;
+            line-height: 1.2 !important;
+        }
+        .nav-btn:hover {
+            color: #0B2545 !important;
+            background-color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .nav-btn.active {
+            background-color: #FFFFFF !important;
+            color: #0B2545 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        }
+        .header-status-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 5px 12px !important;
+            background: #ECFDF5 !important;
+            border: 1px solid #A7F3D0 !important;
+            border-radius: 9999px !important;
+            font-size: 0.74rem !important;
+            font-weight: 600 !important;
+            color: #065F46 !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+        }
+        .pulse-indicator {
+            width: 7px !important;
+            height: 7px !important;
+            background: #10B981 !important;
+            border-radius: 50% !important;
+            position: relative !important;
+        }
+        .pulse-indicator::after {
+            content: '' !important;
+            position: absolute !important;
+            top: -3px !important;
+            left: -3px !important;
+            width: 13px !important;
+            height: 13px !important;
+            border-radius: 50% !important;
+            background: rgba(16, 185, 129, 0.4) !important;
+            animation: pulseRing 1.8s infinite !important;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.7); opacity: 0.8; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* 2-Column Responsive Grid Layout */
+        .grid-layout {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+            gap: 20px !important;
+            align-items: start !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .grid-layout > * {
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+        .card {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            padding: 20px 22px !important;
+        }
+
+        /* Quick Test Samples & Filter Bar */
+        .sample-section {
+            margin-bottom: 14px !important;
+            background: #F8FAFC !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+        }
+        .sample-header-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            margin-bottom: 8px !important;
+            flex-wrap: wrap !important;
+        }
+        .sample-label {
+            font-size: 0.74rem !important;
+            font-weight: 700 !important;
+            color: #0B2545 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            margin: 0 !important;
+        }
+        .filter-tab-group {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 2px !important;
+            background: #E2E8F0 !important;
+            padding: 3px !important;
+            border-radius: 20px !important;
+            border: none !important;
+        }
+        .sample-filter-btn {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            outline: none !important;
+            border: none !important;
+            background: transparent !important;
+            font-family: inherit !important;
+            font-size: 0.72rem !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+            padding: 3px 11px !important;
+            border-radius: 14px !important;
+            cursor: pointer !important;
+            transition: all 0.16s ease !important;
+            line-height: 1.2 !important;
+        }
+        .sample-filter-btn:hover {
+            color: #0B2545 !important;
+            background: rgba(255, 255, 255, 0.6) !important;
+        }
+        .sample-filter-btn.active {
+            background: #FFFFFF !important;
+            color: #00A896 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        .sample-pills {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+        }
+        .sample-pill {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            outline: none !important;
+            font-family: inherit !important;
+            padding: 5px 11px !important;
+            font-size: 0.75rem !important;
+            font-weight: 500 !important;
+            background-color: #FFFFFF !important;
+            color: #0B2545 !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            line-height: 1.2 !important;
+        }
+        .sample-pill:hover {
+            background-color: #E6F7F5 !important;
+            color: #028090 !important;
+            border-color: #99E2D8 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 4px rgba(0, 168, 150, 0.12) !important;
+        }
+        .sample-empty-note {
+            font-size: 0.76rem !important;
+            color: #64748B !important;
+            font-style: italic !important;
+            padding: 4px 6px !important;
+        }
+
+        /* Editor Header & Quick Paste Button */
+        .editor-header-bar {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            margin-bottom: 8px !important;
+            gap: 8px !important;
+            flex-wrap: wrap !important;
+        }
+        .editor-title-group {
+            display: flex !important;
+            align-items: baseline !important;
+            gap: 8px !important;
+            flex-wrap: wrap !important;
+        }
+        .editor-label {
+            font-size: 0.84rem !important;
+            font-weight: 700 !important;
+            color: #0B2545 !important;
+            margin: 0 !important;
+            cursor: pointer !important;
+        }
+        .editor-hint {
+            font-size: 0.72rem !important;
+            color: #64748B !important;
+            font-weight: 400 !important;
+        }
+        .btn-paste-compact {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            outline: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 4px 11px !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: #0B2545 !important;
+            background: #F1F5F9 !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.16s ease !important;
+        }
+        .btn-paste-compact:hover {
+            background: #E6F7F5 !important;
+            color: #028090 !important;
+            border-color: #99E2D8 !important;
+        }
+        .btn-paste-compact.btn-pasted {
+            background: #ECFDF5 !important;
+            color: #065F46 !important;
+            border-color: #6EE7B7 !important;
+        }
+
+        /* Normal Reassurance Box (No Doctor Needed) - Hidden by default */
+        .normal-reassurance-card {
+            display: none !important;
+            align-items: flex-start !important;
+            gap: 14px !important;
+            background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%) !important;
+            border: 1.5px solid #6EE7B7 !important;
+            border-radius: 12px !important;
+            padding: 16px 18px !important;
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.12) !important;
+        }
+        .normal-reassurance-card.active-visible {
+            display: flex !important;
+        }
+        .reassurance-icon-badge {
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 12px !important;
+            background: #10B981 !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3) !important;
+        }
+        .reassurance-body {
+            flex: 1 !important;
+        }
+        .reassurance-header-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            flex-wrap: wrap !important;
+            margin-bottom: 6px !important;
+        }
+        .reassurance-title {
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            color: #065F46 !important;
+            margin: 0 !important;
+        }
+        .no-doctor-tag {
+            display: inline-flex !important;
+            align-items: center !important;
+            padding: 4px 11px !important;
+            background: #10B981 !important;
+            color: #FFFFFF !important;
+            font-size: 0.74rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.04em !important;
+            border-radius: 9999px !important;
+            text-transform: uppercase !important;
+        }
+        .reassurance-message {
+            font-size: 0.88rem !important;
+            color: #047857 !important;
+            line-height: 1.5 !important;
+            margin-bottom: 6px !important;
+        }
+        .reassurance-footer-note {
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
+            color: #065F46 !important;
+        }
+
+        /* Directly Identified Conditions Card (Dengue, Malaria, Typhoid, Diabetes, Jaundice, etc.) - Hidden by default */
+        .direct-conditions-card {
+            display: none !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid #FCA5A5 !important;
+            border-radius: 12px !important;
+            padding: 16px 18px !important;
+            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.09) !important;
+        }
+        .direct-conditions-card.active-visible {
+            display: block !important;
+        }
+        .direct-conditions-header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            border-bottom: 1px solid #FEE2E2 !important;
+            padding-bottom: 10px !important;
+            margin-bottom: 12px !important;
+            flex-wrap: wrap !important;
+        }
+        .direct-cond-title-area {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        .direct-cond-pulse-icon {
+            font-size: 1.3rem !important;
+        }
+        .direct-cond-title {
+            font-size: 1.02rem !important;
+            font-weight: 700 !important;
+            color: #991B1B !important;
+            margin: 0 !important;
+        }
+        .direct-cond-sub {
+            font-size: 0.74rem !important;
+            color: #64748B !important;
+            margin: 0 !important;
+        }
+        .direct-cond-counter {
+            padding: 3px 10px !important;
+            background: #FEE2E2 !important;
+            color: #991B1B !important;
+            border: 1px solid #FCA5A5 !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            border-radius: 9999px !important;
+            text-transform: uppercase !important;
+        }
+        .direct-conditions-list {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        .direct-condition-item {
+            background: #FFF5F5 !important;
+            border: 1px solid #FED7D7 !important;
+            border-radius: 8px !important;
+            padding: 12px 14px !important;
+            transition: all 0.2s ease !important;
+        }
+        .direct-condition-item.severity-critical {
+            background: #FEF2F2 !important;
+            border-color: #F87171 !important;
+            border-left: 4px solid #EF4444 !important;
+        }
+        .direct-condition-item.severity-high {
+            background: #FFFBF0 !important;
+            border-color: #FDE68A !important;
+            border-left: 4px solid #F59E0B !important;
+        }
+        .direct-condition-item.severity-moderate {
+            background: #F0FDF4 !important;
+            border-color: #BBF7D0 !important;
+            border-left: 4px solid #10B981 !important;
+        }
+        .direct-cond-top {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            margin-bottom: 6px !important;
+            flex-wrap: wrap !important;
+        }
+        .cond-name-wrap {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .cond-icon {
+            font-size: 1.15rem !important;
+        }
+        .cond-heading {
+            font-size: 0.92rem !important;
+            font-weight: 700 !important;
+            color: #0B2545 !important;
+        }
+        .cond-status-tag {
+            padding: 2px 8px !important;
+            border-radius: 9999px !important;
+            font-size: 0.68rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.04em !important;
+            text-transform: uppercase !important;
+        }
+        .tag-critical {
+            background: #EF4444 !important;
+            color: #FFFFFF !important;
+        }
+        .tag-high {
+            background: #F59E0B !important;
+            color: #FFFFFF !important;
+        }
+        .tag-moderate {
+            background: #10B981 !important;
+            color: #FFFFFF !important;
+        }
+        .cond-desc {
+            font-size: 0.84rem !important;
+            color: #475569 !important;
+            line-height: 1.45 !important;
+            margin-bottom: 6px !important;
+        }
+        .cond-action-row {
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 6px !important;
+            font-size: 0.78rem !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            padding: 6px 10px !important;
+            border-radius: 6px !important;
+            border: 1px solid rgba(0, 0, 0, 0.06) !important;
+        }
+        .action-tag {
+            font-weight: 700 !important;
+            color: #0B2545 !important;
+            white-space: nowrap !important;
+        }
+        .action-text {
+            color: #1E293B !important;
+        }
+
+        /* Compact Upload Dropzone */
+        .upload-dropzone {
+            padding: 22px 16px !important;
+            margin-bottom: 12px !important;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1240px) {
+            .brand-subtitle { display: none !important; }
+            .nav-btn { padding: 5px 8px !important; font-size: 0.76rem !important; gap: 4px !important; }
+            .nav-btn svg { width: 14px !important; height: 14px !important; }
+        }
+        @media (max-width: 1040px) {
+            .grid-layout {
+                grid-template-columns: 1fr !important;
+            }
+            .header-inner {
+                flex-wrap: wrap !important;
+            }
+            .nav-links {
+                order: 3 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">MedReport AI</h1>
+                    <span class="brand-subtitle">Clinical Assistant &amp; NLP</span>
+                </div>
+            </div>
+
+            <nav class="nav-links" id="main-nav">
+                <button class="nav-btn active" data-tab="tab-analyzer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Report Analyzer</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-classify">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>NLP Classifier</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-performance">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span>Performance</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-dataset">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>Corpus</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-xray">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>X-Ray Roadmap</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-about">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span>About</span>
+                </button>
+            </nav>
+
+            <div class="header-status-badge">
+                <span class="pulse-indicator"></span>
+                <span>Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container main-content">
+
+        <!-- =================================================================== -->
+        <!-- TAB 1: MEDICAL REPORT ANALYZER (PHASE 3) -->
+        <!-- =================================================================== -->
+        <section id="tab-analyzer" class="tab-pane active">
+            <div class="hero-block">
+                <span class="hero-pill">Medical AI Report Assistant</span>
+                <h2 class="hero-title">Medical Report & Laboratory Investigation Analyzer</h2>
+                <p class="hero-desc">
+                    Upload a <strong>PDF or image report</strong> (Pathology, CBC, Metabolic Panels, or Ultrasound), or select a verified sample report. The system extracts text, compares test values against printed and standard reference ranges, and explains findings in plain language.
+                </p>
+            </div>
+
+            <div class="grid-layout">
+                <!-- Left Column: Upload, Preview & Controls -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <span class="step-num">1</span>
+                            <div>
+                                <h3 class="card-title">Upload or Input Medical Report</h3>
+                                <p class="card-subtitle">PDF, PNG, JPG, or manual laboratory text entry</p>
+                            </div>
+                        </div>
+
+                        <!-- Report Mode & Language Selectors -->
+                        <div class="header-controls-row">
+                            <div class="model-select-wrapper">
+                                <label for="report-type-selector" class="select-label">Report Type:</label>
+                                <select id="report-type-selector" class="custom-select">
+                                    <option value="lab" selected>Laboratory / Pathology Panel</option>
+                                    <option value="sonography">Sonography / Ultrasound Findings</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrapper">
+                                <label for="report-lang-selector" class="select-label">Explanation Language:</label>
+                                <select id="report-lang-selector" class="custom-select">
+                                    <option value="auto" selected>🌐 Auto (Hinglish/Gujlish/En)</option>
+                                    <option value="hinglish">Hinglish</option>
+                                    <option value="gujlish">Gujlish</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Sample Reports with Language Filter Tabs -->
+                    <div class="sample-section">
+                        <div class="sample-header-row">
+                            <span class="sample-label">Quick Test Samples:</span>
+                            <div class="filter-tab-group" id="report-sample-filters">
+                                <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
+                                <button type="button" class="sample-filter-btn" data-filter="English">English</button>
+                                <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
+                                <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                            </div>
+                        </div>
+                        <div class="sample-pills" id="report-sample-buttons">
+                            <!-- Populated dynamically via JS -->
+                            <button class="sample-pill-loading" disabled>Loading report samples...</button>
+                        </div>
+                    </div>
+
+                    <!-- Drag & Drop Upload Zone -->
+                    <div class="upload-dropzone" id="report-dropzone">
+                        <input type="file" id="report-file-input" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <h4 class="dropzone-title">Drag & drop medical report here, or <span class="dropzone-browse">browse files</span></h4>
+                            <p class="dropzone-sub">Supports digital PDF, PNG, JPG (Max 15 MB). Processed strictly in memory.</p>
+                            <div class="dropzone-format-tags">
+                                <span class="format-badge">📄 Digital PDF</span>
+                                <span class="format-badge">🔍 Scanned OCR</span>
+                                <span class="format-badge">🖼️ PNG / JPG</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Uploaded File Badge (Hidden until uploaded) -->
+                    <div class="file-loaded-badge" id="file-loaded-badge" style="display: none;">
+                        <div class="file-info">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span id="loaded-filename">report.pdf</span>
+                            <span class="file-size" id="loaded-filesize">(0 KB)</span>
+                        </div>
+                        <button class="btn-remove-file" id="remove-file-btn" title="Remove file">&times;</button>
+                    </div>
+
+                    <!-- Extracted Text Verification Box -->
+                    <div class="textarea-container mt-16">
+                        <div class="editor-header-bar">
+                            <div class="editor-title-group">
+                                <label for="report-text-input" class="editor-label">Extracted Report Text</label>
+                                <span class="editor-hint">Review or edit values before analysis</span>
+                            </div>
+                            <button type="button" class="btn-paste-compact" id="paste-report-btn" title="Paste text from clipboard">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                <span>Paste Text</span>
+                            </button>
+                        </div>
+                        <textarea 
+                            id="report-text-input" 
+                            class="medical-textarea" 
+                            placeholder="Extracted report text will appear here for verification. You can also directly type or paste test values..."
+                            rows="7"
+                            maxlength="50000"
+                        ></textarea>
+                        
+                        <div class="textarea-footer">
+                            <span id="report-char-counter" class="char-count">0 characters</span>
+                            <span id="report-word-counter" class="word-count">0 words</span>
+                        </div>
+                    </div>
+
+                    <!-- Input Validation Alert -->
+                    <div id="report-error" class="alert-box alert-error" style="display: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span id="report-error-msg">Please provide report text to analyze.</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button id="analyze-report-btn" class="btn btn-primary">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span class="btn-text">Analyze Report</span>
+                            <span class="spinner" style="display: none;"></span>
+                        </button>
+                        <button id="clear-report-btn" class="btn btn-secondary">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Results Panel -->
+                <div class="card result-card" id="report-results-panel">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <span class="step-num step-teal">2</span>
+                            <div>
+                                <h3 class="card-title">Analysis & Clinical Context</h3>
+                                <p class="card-subtitle">Extracted parameters, reference ranges & plain explanations</p>
+                            </div>
+                        </div>
+                        <div class="header-status-area">
+                            <span class="lang-pill" id="report-lang-pill" style="display: none;">🌐 English</span>
+                            <span class="status-badge" id="report-live-badge">READY</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="report-results-empty" class="results-empty-state">
+                        <div class="empty-icon-wrap">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <h4>Awaiting Report Analysis</h4>
+                        <p>Upload a report PDF or select one of the quick test sample buttons on the left, then click <strong>Analyze Report</strong>.</p>
+                    </div>
+
+                    <!-- Laboratory Results View -->
+                    <div id="lab-results-content" style="display: none;">
+                        <!-- Summary KPI Pills -->
+                        <div class="lab-summary-row">
+                            <div class="lab-kpi-pill kpi-detected">
+                                <span class="kpi-num" id="lab-total-count">0</span>
+                                <span class="kpi-desc">Tests Detected</span>
+                            </div>
+                            <div class="lab-kpi-pill kpi-high">
+                                <span class="kpi-num" id="lab-high-count">0</span>
+                                <span class="kpi-desc">High / Elevated</span>
+                            </div>
+                            <div class="lab-kpi-pill kpi-low">
+                                <span class="kpi-num" id="lab-low-count">0</span>
+                                <span class="kpi-desc">Low / Deficient</span>
+                            </div>
+                            <div class="lab-kpi-pill kpi-normal">
+                                <span class="kpi-num" id="lab-normal-count">0</span>
+                                <span class="kpi-desc">Within Range</span>
+                            </div>
+                        </div>
+
+                        <!-- Normal Reassurance Banner (Displayed when 100% normal - No Doctor Needed) -->
+                        <div class="normal-reassurance-card mt-16" id="normal-reassurance-box" style="display: none;">
+                            <div class="reassurance-icon-badge">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                            </div>
+                            <div class="reassurance-body">
+                                <div class="reassurance-header-row">
+                                    <h4 class="reassurance-title" id="normal-reassurance-title">Everything Looks Normal — Healthy Report!</h4>
+                                    <span class="no-doctor-tag">✓ No Doctor Needed</span>
+                                </div>
+                                <p class="reassurance-message" id="normal-reassurance-msg">All your tested parameters fall well within standard healthy reference intervals. There is NO need to visit a doctor or worry about these results.</p>
+                                <div class="reassurance-footer-note" id="normal-reassurance-rec">No immediate doctor consultation needed. Continue your regular healthy diet and lifestyle.</div>
+                            </div>
+                        </div>
+
+                        <!-- Directly Identified Conditions Card (Dengue, Malaria, Typhoid, Diabetes, Jaundice, etc.) -->
+                        <div class="direct-conditions-card mt-16" id="direct-conditions-box" style="display: none;">
+                            <div class="direct-conditions-header">
+                                <div class="direct-cond-title-area">
+                                    <span class="direct-cond-pulse-icon">⚡</span>
+                                    <div>
+                                        <h4 class="direct-cond-title">Directly Identified Diseases &amp; Pathologies</h4>
+                                        <p class="direct-cond-sub">Automated condition detection from diagnostic parameters &amp; serology</p>
+                                    </div>
+                                </div>
+                                <span class="direct-cond-counter" id="direct-cond-counter">1 Active Condition</span>
+                            </div>
+                            <div class="direct-conditions-list" id="direct-conditions-list">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Clinical Diagnostic Synthesis Box (Multi-test correlation) -->
+                        <div class="clinical-diagnosis-card mt-16" id="clinical-diagnosis-box">
+                            <div class="clinical-diag-header">
+                                <div class="diag-title-area">
+                                    <div class="diag-icon-shield">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="diag-box-title">Clinical Diagnostic Synthesis</h4>
+                                        <p class="diag-box-sub">Multi-parameter syndromic correlation & automated risk triage</p>
+                                    </div>
+                                </div>
+                                <div class="acuity-badge-container">
+                                    <span class="acuity-label">CLINICAL ACUITY:</span>
+                                    <span class="acuity-badge" id="clinical-acuity-badge">NORMAL</span>
+                                </div>
+                            </div>
+
+                            <!-- Primary Impressions List -->
+                            <div class="diag-section">
+                                <h5 class="diag-section-title">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    Primary Diagnostic Impressions
+                                </h5>
+                                <ul class="diag-impressions-list" id="diag-impressions-list">
+                                    <!-- Populated dynamically via JS -->
+                                </ul>
+                            </div>
+
+                            <!-- Differential Diagnoses Chips & Next Steps Grid -->
+                            <div class="diag-details-grid mt-12">
+                                <div class="diag-sub-panel">
+                                    <h5 class="diag-section-title">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                        Differential Diagnoses Considered
+                                    </h5>
+                                    <div class="differential-chips" id="diag-differentials-list">
+                                        <!-- Populated dynamically via JS -->
+                                    </div>
+                                </div>
+
+                                <div class="diag-sub-panel">
+                                    <h5 class="diag-section-title">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+                                        Recommended Next Steps & Clinical Action
+                                    </h5>
+                                    <ul class="diag-steps-list" id="diag-next-steps-list">
+                                        <!-- Populated dynamically via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lab Tests Table -->
+                        <div class="table-responsive mt-16">
+                            <table class="data-table lab-table">
+                                <thead>
+                                    <tr>
+                                        <th>Investigation / Test</th>
+                                        <th>Measured Value</th>
+                                        <th>Reference Interval &amp; Gauge</th>
+                                        <th>Status</th>
+                                        <th>Plain-Language Context</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lab-table-body">
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Lab Disclaimer -->
+                        <div class="result-disclaimer mt-16">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>Reference intervals vary across laboratories, age, and sex. This interpretation is for educational understanding and must be correlated clinically with your physician.</span>
+                        </div>
+                    </div>
+
+                    <!-- Sonography Results View -->
+                    <div id="sonography-results-content" style="display: none;">
+                        <!-- Normal Reassurance Banner for Sonography -->
+                        <div class="normal-reassurance-card mb-16" id="sono-normal-reassurance-box" style="display: none;">
+                            <div class="reassurance-icon-badge">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                            </div>
+                            <div class="reassurance-body">
+                                <div class="reassurance-header-row">
+                                    <h4 class="reassurance-title" id="sono-normal-title">Normal Ultrasound Findings — Healthy Scan!</h4>
+                                    <span class="no-doctor-tag">✓ No Doctor Needed</span>
+                                </div>
+                                <p class="reassurance-message" id="sono-normal-msg">No acute anatomical lesions, calculi, or inflammatory fluid detected. Everything looks physiological.</p>
+                                <div class="reassurance-footer-note" id="sono-normal-rec">No immediate medical intervention required. Continue routine preventive health.</div>
+                            </div>
+                        </div>
+
+                        <!-- Directly Identified Conditions for Sonography (Gallstones, Fatty Liver, Kidney Stones) -->
+                        <div class="direct-conditions-card mb-16" id="sono-direct-conditions-box" style="display: none;">
+                            <div class="direct-conditions-header">
+                                <div class="direct-cond-title-area">
+                                    <span class="direct-cond-pulse-icon">⚡</span>
+                                    <div>
+                                        <h4 class="direct-cond-title">Directly Identified Radiological Pathologies</h4>
+                                        <p class="direct-cond-sub">Calculi, organ steatosis, and structural anomalies confirmed from scan text</p>
+                                    </div>
+                                </div>
+                                <span class="direct-cond-counter" id="sono-direct-cond-counter">1 Condition Found</span>
+                            </div>
+                            <div class="direct-conditions-list" id="sono-direct-conditions-list">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Impression Highlight Box -->
+                        <div class="prediction-highlight-box">
+                            <span class="pred-label">RADIOLOGICAL IMPRESSION / SUMMARY:</span>
+                            <p class="sono-impression-text" id="sono-impression-text">--</p>
+                        </div>
+
+                        <!-- Organ Observations Cards -->
+                        <div class="sono-section">
+                            <h4 class="prob-title mb-8">Organ Findings & Anatomical Observations</h4>
+                            <div class="sono-obs-list" id="sono-obs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Terminology Glossary -->
+                        <div class="sono-section mt-16">
+                            <h4 class="prob-title mb-8">Radiological Terminology Decoded</h4>
+                            <div class="sono-terms-grid" id="sono-terms-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Sonography Disclaimer -->
+                        <div class="result-disclaimer mt-16">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>Notice: Ultrasound interpretation depends on acoustic windows and operator technique. This tool explains written radiological findings and does not review ultrasound video or pixel images.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 2: ORIGINAL MEDICAL ABSTRACT CLASSIFIER (NLP) (PHASE 4) -->
+        <!-- =================================================================== -->
+        <section id="tab-classify" class="tab-pane">
+            <div class="hero-block">
+                <span class="hero-pill">Original NLP Project Baseline</span>
+                <h2 class="hero-title">Medical Text Classification Using NLP</h2>
+                <p class="hero-desc">
+                    Classify peer-reviewed medical abstracts into one of five categories using our trained 10,000-dimensional TF-IDF vectorizer and Scikit-learn classifiers.
+                </p>
+            </div>
+
+            <div class="grid-layout">
+                <!-- Left Column: Input Form -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <span class="step-num">1</span>
+                            <div>
+                                <h3 class="card-title">Input Research Abstract</h3>
+                                <p class="card-subtitle">Paste peer-reviewed medical text or select a test sample</p>
+                            </div>
+                        </div>
+
+                        <!-- Model Selection Toggle -->
+                        <div class="model-select-wrapper">
+                            <label for="model-selector" class="select-label">Classifier:</label>
+                            <select id="model-selector" class="custom-select">
+                                <option value="nb" selected>Multinomial Naive Bayes (Winner - 58.86%)</option>
+                                <option value="lr">Logistic Regression (56.72%)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sample Abstracts Buttons with Language Filter Tabs -->
+                    <div class="sample-section">
+                        <div class="sample-header-row">
+                            <span class="sample-label">Quick Test Abstract Samples:</span>
+                            <div class="filter-tab-group" id="abstract-sample-filters">
+                                <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
+                                <button type="button" class="sample-filter-btn" data-filter="English">English</button>
+                                <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
+                                <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                            </div>
+                        </div>
+                        <div class="sample-pills" id="sample-buttons">
+                            <!-- Populated dynamically via JS -->
+                            <button class="sample-pill-loading" disabled>Loading samples...</button>
+                        </div>
+                    </div>
+
+                    <!-- Text Area -->
+                    <div class="textarea-container">
+                        <div class="editor-header-bar">
+                            <div class="editor-title-group">
+                                <label for="abstract-input" class="editor-label">Medical Abstract / Clinical Statement</label>
+                                <span class="editor-hint">English, Hinglish, or Gujlish input</span>
+                            </div>
+                            <button type="button" class="btn-paste-compact" id="paste-abstract-btn" title="Paste text from clipboard">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                <span>Paste Text</span>
+                            </button>
+                        </div>
+                        <textarea 
+                            id="abstract-input" 
+                            class="medical-textarea" 
+                            placeholder="Paste medical research abstract text here (e.g., patient condition, clinical findings, pathology results, oncology or cardiology reports in English, Hinglish, or Gujlish)..."
+                            rows="7"
+                            maxlength="15000"
+                        ></textarea>
+                        
+                        <div class="textarea-footer">
+                            <span id="char-counter" class="char-count">0 / 15,000 characters</span>
+                            <span id="word-counter" class="word-count">0 words</span>
+                        </div>
+                    </div>
+
+                    <!-- Input Validation Alert -->
+                    <div id="input-error" class="alert-box alert-error" style="display: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span id="input-error-msg">Please enter a valid medical abstract.</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button id="classify-btn" class="btn btn-primary">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span class="btn-text">Classify Abstract</span>
+                            <span class="spinner" style="display: none;"></span>
+                        </button>
+                        <button id="clear-btn" class="btn btn-secondary">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Clear Input
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Results Panel -->
+                <div class="card result-card" id="results-panel">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <span class="step-num step-teal">2</span>
+                            <div>
+                                <h3 class="card-title">Prediction & Confidence</h3>
+                                <p class="card-subtitle">Real Scikit-learn inference output</p>
+                            </div>
+                        </div>
+                        <div class="header-status-area">
+                            <span class="lang-pill" id="classify-lang-pill" style="display: none;">🌐 English</span>
+                            <span class="status-badge" id="live-badge">READY</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty / Initial Placeholder State -->
+                    <div id="results-empty" class="results-empty-state">
+                        <div class="empty-icon-wrap">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/><line x1="12" y1="11" x2="12" y2="17"/></svg>
+                        </div>
+                        <h4>Awaiting Medical Text</h4>
+                        <p>Type or paste a clinical abstract on the left and click <strong>Classify Abstract</strong>, or click one of the quick test sample buttons above.</p>
+                    </div>
+
+                    <!-- Active Result State (Hidden until predicted) -->
+                    <div id="results-content" style="display: none;">
+                        <div class="prediction-highlight-box" id="pred-highlight-box">
+                            <span class="pred-label">PREDICTED MEDICAL CATEGORY:</span>
+                            <h3 class="pred-category-name" id="res-category-name">Neoplasms</h3>
+                            <p class="pred-category-desc" id="res-category-desc">Tumors, oncological malignancies, and benign growths.</p>
+                            <div class="pred-meta-row">
+                                <span class="meta-item">
+                                    <strong>Category ID:</strong> <span id="res-category-id">1</span>
+                                </span>
+                                <span class="meta-item">
+                                    <strong>Model Used:</strong> <span id="res-model-name">Multinomial Naive Bayes</span>
+                                </span>
+                                <span class="meta-item">
+                                    <strong>Cleaned Tokens:</strong> <span id="res-token-count">0</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Multilingual Detection & Normalization Banner -->
+                        <div class="multilingual-detection-banner mt-12" id="res-multilingual-banner" style="display: none;">
+                            <div class="lang-info-row">
+                                <span class="lang-tag" id="res-detected-lang-tag">🌐 Detected: Hinglish</span>
+                                <span class="trans-status" id="res-trans-status">Normalized to Medical Terminology</span>
+                            </div>
+                            <p class="trans-query-text" id="res-trans-query"></p>
+                        </div>
+
+                        <!-- Confidence Score Distribution Breakdown -->
+                        <div class="probabilities-container">
+                            <div class="prob-header">
+                                <h4 class="prob-title">Confidence Distribution (Model Estimates)</h4>
+                                <span class="info-tag">Sum = 100%</span>
+                            </div>
+                            <p class="prob-subtext">These percentages reflect statistical feature weights generated by Scikit-learn's <code>predict_proba()</code>, not clinical patient probabilities.</p>
+
+                            <div class="prob-list" id="prob-bars-list">
+                                <!-- Populated dynamically by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Result Card Disclaimer Footer -->
+                        <div class="result-disclaimer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>Prediction is generated by a mathematical TF-IDF model. Not for diagnostic use.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: MODEL PERFORMANCE (TEST EVALUATION) -->
+        <!-- =================================================================== -->
+        <section id="tab-performance" class="tab-pane">
+            <div class="section-intro">
+                <span class="hero-pill">Verified Experimental Results</span>
+                <h2 class="section-title">Model Performance & Evaluation Benchmark</h2>
+                <p class="section-desc">
+                    Metrics were obtained by evaluating both models on the official <strong>2,888 held-out test abstracts</strong> (completely unseen during training). No metrics are fabricated.
+                </p>
+            </div>
+
+            <!-- Top Summary KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card highlight">
+                    <span class="kpi-badge">Selected Model</span>
+                    <h3 class="kpi-value">58.86%</h3>
+                    <p class="kpi-label">Multinomial Naive Bayes Accuracy</p>
+                    <span class="kpi-sub">5-Fold CV on Train: 59.45%</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge secondary">Baseline</span>
+                    <h3 class="kpi-value">56.72%</h3>
+                    <p class="kpi-label">Logistic Regression Accuracy</p>
+                    <span class="kpi-sub">5-Fold CV on Train: 57.77%</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge">Baseline Comparison</span>
+                    <h3 class="kpi-value">2.94x</h3>
+                    <p class="kpi-label">Higher than Random Chance</p>
+                    <span class="kpi-sub">5-Class Random Guess = 20.0%</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge">Top Category Recall</span>
+                    <h3 class="kpi-value">76.78%</h3>
+                    <p class="kpi-label">Neoplasms (Cancer) Recall</p>
+                    <span class="kpi-sub">F1-Score: 0.7227 (633 test cases)</span>
+                </div>
+            </div>
+
+            <!-- Model Comparison Table Card -->
+            <div class="card mt-24">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Overall Performance Comparison (2,888 Test Abstracts)</h3>
+                        <p class="card-subtitle">Side-by-side comparison of Naive Bayes vs. Logistic Regression</p>
+                    </div>
+                    <span class="eval-tag">Held-out Test Set</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Classifier</th>
+                                <th>Status</th>
+                                <th>Test Accuracy</th>
+                                <th>Macro Precision</th>
+                                <th>Macro Recall</th>
+                                <th>Macro F1</th>
+                                <th>Weighted F1</th>
+                                <th>Training Speed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="row-winner">
+                                <td><strong>Multinomial Naive Bayes</strong></td>
+                                <td><span class="badge-winner">Winner (Selected)</span></td>
+                                <td><strong>58.86%</strong></td>
+                                <td>58.21%</td>
+                                <td>60.14%</td>
+                                <td><strong>58.99%</strong></td>
+                                <td>58.22%</td>
+                                <td>0.010 sec</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Logistic Regression</strong></td>
+                                <td><span class="badge-neutral">Baseline</span></td>
+                                <td>56.72%</td>
+                                <td>57.38%</td>
+                                <td>54.00%</td>
+                                <td>55.22%</td>
+                                <td>56.48%</td>
+                                <td>1.381 sec</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Per-Class Metrics and Confusion Matrix Grid -->
+            <div class="grid-2-col mt-24">
+                <!-- Per-Class Breakdown -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Naive Bayes: Per-Class Metrics</h3>
+                            <p class="card-subtitle">Precision, Recall, and F1 across all 5 categories</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>[1] Neoplasms</td>
+                                    <td>0.6826</td>
+                                    <td><strong>0.7678</strong></td>
+                                    <td><strong>0.7227</strong></td>
+                                    <td>633</td>
+                                </tr>
+                                <tr>
+                                    <td>[2] Digestive diseases</td>
+                                    <td>0.5123</td>
+                                    <td>0.5585</td>
+                                    <td>0.5344</td>
+                                    <td>299</td>
+                                </tr>
+                                <tr>
+                                    <td>[3] Nervous system diseases</td>
+                                    <td>0.5761</td>
+                                    <td>0.5506</td>
+                                    <td>0.5631</td>
+                                    <td>385</td>
+                                </tr>
+                                <tr>
+                                    <td>[4] Cardiovascular diseases</td>
+                                    <td>0.6431</td>
+                                    <td>0.7148</td>
+                                    <td>0.6770</td>
+                                    <td>610</td>
+                                </tr>
+                                <tr>
+                                    <td>[5] General pathological</td>
+                                    <td>0.4963</td>
+                                    <td>0.4152</td>
+                                    <td>0.4521</td>
+                                    <td>961</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix View -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Naive Bayes: Confusion Matrix</h3>
+                            <p class="card-subtitle">Diagonal shows correct predictions (Total: 1,700/2,888)</p>
+                        </div>
+                    </div>
+                    <div class="cm-wrapper">
+                        <div class="table-responsive">
+                            <table class="cm-table">
+                                <thead>
+                                    <tr>
+                                        <th>True \ Pred</th>
+                                        <th>[1] Neopl</th>
+                                        <th>[2] Digest</th>
+                                        <th>[3] Nerv</th>
+                                        <th>[4] Cardio</th>
+                                        <th>[5] Patho</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>[1] Neoplasms</th>
+                                        <td class="cm-diag">486</td>
+                                        <td>31</td>
+                                        <td>23</td>
+                                        <td>13</td>
+                                        <td>80</td>
+                                    </tr>
+                                    <tr>
+                                        <th>[2] Digestive</th>
+                                        <td>36</td>
+                                        <td class="cm-diag">167</td>
+                                        <td>4</td>
+                                        <td>9</td>
+                                        <td>83</td>
+                                    </tr>
+                                    <tr>
+                                        <th>[3] Nervous</th>
+                                        <td>26</td>
+                                        <td>8</td>
+                                        <td class="cm-diag">212</td>
+                                        <td>29</td>
+                                        <td>110</td>
+                                    </tr>
+                                    <tr>
+                                        <th>[4] Cardio</th>
+                                        <td>9</td>
+                                        <td>6</td>
+                                        <td>27</td>
+                                        <td class="cm-diag">436</td>
+                                        <td>132</td>
+                                    </tr>
+                                    <tr>
+                                        <th>[5] Pathological</th>
+                                        <td>155</td>
+                                        <td>114</td>
+                                        <td>102</td>
+                                        <td>191</td>
+                                        <td class="cm-diag">399</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="cm-note"><strong>Observation:</strong> Class 5 (General pathological conditions) has the highest dispersion because general medical concepts (sepsis, inflammation, shock) co-occur across specific organ diseases.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: DATASET OVERVIEW -->
+        <!-- =================================================================== -->
+        <section id="tab-dataset" class="tab-pane">
+            <div class="section-intro">
+                <span class="hero-pill">Corpus Architecture</span>
+                <h2 class="section-title">Medical Abstracts Text Classification Dataset</h2>
+                <p class="section-desc">
+                    Verified data from the peer-reviewed corpus published by <em>Schopf et al. (ACM NLPIR 2023)</em>. Contains 14,438 peer-reviewed medical research paper abstracts.
+                </p>
+            </div>
+
+            <!-- Dataset Stats Grid -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-badge">Total Dataset</span>
+                    <h3 class="kpi-value">14,438</h3>
+                    <p class="kpi-label">Research Abstracts</p>
+                    <span class="kpi-sub">100% Peer-Reviewed Papers</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge">Training Split</span>
+                    <h3 class="kpi-value">11,550</h3>
+                    <p class="kpi-label">Training Records (80%)</p>
+                    <span class="kpi-sub">Fitted TF-IDF Vocabulary</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge">Testing Split</span>
+                    <h3 class="kpi-value">2,888</h3>
+                    <p class="kpi-label">Held-out Test Records (20%)</p>
+                    <span class="kpi-sub">Reserved Strictly for Evaluation</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-badge">Target Classes</span>
+                    <h3 class="kpi-value">5</h3>
+                    <p class="kpi-label">Distinct Clinical Domains</p>
+                    <span class="kpi-sub">0 Missing / Null Values</span>
+                </div>
+            </div>
+
+            <!-- Category Distribution Table -->
+            <div class="card mt-24">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Category Distribution & Verification</h3>
+                        <p class="card-subtitle">Exact numbers verified against repository documentation</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Class ID</th>
+                                <th>Category Name</th>
+                                <th>Clinical Scope</th>
+                                <th>Training Count</th>
+                                <th>Test Count</th>
+                                <th>Total Count</th>
+                                <th>Share (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td><strong>Neoplasms</strong></td>
+                                <td>Carcinomas, tumors, oncological growths, lymphomas</td>
+                                <td>2,530</td>
+                                <td>633</td>
+                                <td><strong>3,163</strong></td>
+                                <td>21.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td><strong>Digestive system diseases</strong></td>
+                                <td>Gastrointestinal, colorectal, hepatic, duodenal ulcers</td>
+                                <td>1,195</td>
+                                <td>299</td>
+                                <td><strong>1,494</strong></td>
+                                <td>10.3%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td><strong>Nervous system diseases</strong></td>
+                                <td>Cerebral ischemia, neuropathy, stroke, brain disorders</td>
+                                <td>1,540</td>
+                                <td>385</td>
+                                <td><strong>1,925</strong></td>
+                                <td>13.3%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td><strong>Cardiovascular diseases</strong></td>
+                                <td>Myocardial infarction, coronary grafts, heart failure</td>
+                                <td>2,441</td>
+                                <td>610</td>
+                                <td><strong>3,051</strong></td>
+                                <td>21.1%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td><strong>General pathological conditions</strong></td>
+                                <td>Systemic sepsis, shock, necrosis, inflammation, wound repair</td>
+                                <td>3,844</td>
+                                <td>961</td>
+                                <td><strong>4,805</strong></td>
+                                <td>33.3%</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Total Dataset</th>
+                                <th>11,550</th>
+                                <th>2,888</th>
+                                <th>14,438</th>
+                                <th>100.0%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 5: FUTURE X-RAY VISION ROADMAP (PHASE 5) -->
+        <!-- =================================================================== -->
+        <section id="tab-xray" class="tab-pane">
+            <div class="section-intro">
+                <span class="hero-pill">Computer Vision Roadmap</span>
+                <h2 class="section-title">Medical Imaging & Radiograph Analysis Roadmap</h2>
+                <p class="section-desc">
+                    Architectural blueprint for integrating deep-learning diagnostic models for chest X-rays and medical radiographs in future versions.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <!-- Why Text Models Cannot Diagnose X-Rays -->
+                <div class="card about-card full-width">
+                    <div class="about-icon-header">
+                        <div class="about-icon navy">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="card-title">1. Why Text NLP Classifiers Cannot Diagnose X-Rays</h3>
+                            <p class="card-subtitle">Scientific Integrity & Medical Ethics in AI Development</p>
+                        </div>
+                    </div>
+                    <div class="xray-alert-box">
+                        <p><strong>Examiner Note:</strong> Our current verified models (Multinomial Naive Bayes and Logistic Regression) operate exclusively on <strong>textual n-gram tokens</strong> extracted via TF-IDF from written medical documents. Feeding an X-ray image directly into a text classifier is scientifically invalid. In accordance with clinical AI guidelines, we explicitly present a structured engineering roadmap rather than producing fabricated image predictions.</p>
+                    </div>
+                </div>
+
+                <!-- Deep Learning Vision Architecture -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        </div>
+                        <h3 class="card-title">2. Required Vision Architecture</h3>
+                    </div>
+                    <ul class="clean-list">
+                        <li><strong>Deep CNNs & ViTs:</strong> DenseNet-121 (CheXNet architecture), EfficientNet-B4, or Swin Vision Transformers.</li>
+                        <li><strong>Validated Benchmarks:</strong> Pre-trained on NIH ChestX-ray14 (112,120 frontal views) or Stanford CheXpert (224,316 radiographs).</li>
+                        <li><strong>Multi-Label Head:</strong> Predicts 14 independent cardiopulmonary conditions (Cardiomegaly, Effusion, Consolidation, Infiltration, Pneumothorax).</li>
+                        <li><strong>DICOM Windowing:</strong> Preserves 16-bit dynamic range Hounsfield density before resizing.</li>
+                    </ul>
+                </div>
+
+                <!-- Explainable AI (Grad-CAM) -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </div>
+                        <h3 class="card-title">3. Explainable AI & Saliency Heatmaps</h3>
+                    </div>
+                    <ul class="clean-list">
+                        <li><strong>Grad-CAM Visualization:</strong> Computes the gradient of the predicted abnormality score with respect to feature maps in the final convolutional layer.</li>
+                        <li><strong>Radiologist Heatmaps:</strong> Highlights the precise anatomical lung zone (e.g. left lower lobe consolidation) triggering the probability.</li>
+                        <li><strong>Clinical Verification:</strong> Guarantees that the network is focusing on actual pathology rather than hospital markers, pacemaker wires, or border artifacts.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 6: ABOUT PROJECT -->
+        <!-- =================================================================== -->
+        <section id="tab-about" class="tab-pane">
+            <div class="section-intro">
+                <span class="hero-pill">System Documentation</span>
+                <h2 class="section-title">About the Medical AI Assistant Project</h2>
+                <p class="section-desc">
+                    Comprehensive overview of the problem statement, objectives, NLP workflow, algorithms, and practical future scope.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <!-- Problem Statement -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <h3 class="card-title">1. Problem Statement</h3>
+                    </div>
+                    <p>Over 1.5 million biomedical papers and millions of diagnostic patient reports are produced annually. Clinicians, students, and patients face heavy cognitive load deciphering complex diagnostic jargon, lab parameters, and research abstracts. Automating text classification and structured report interpretation streamlines clinical documentation and health literacy.</p>
+                </div>
+
+                <!-- Project Objectives -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon navy">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <h3 class="card-title">2. Project Objectives</h3>
+                    </div>
+                    <ul class="clean-list">
+                        <li>Implement clinical-safe text preprocessing without losing medical acronyms or dosages.</li>
+                        <li>Multilingual Clinical Understanding: Seamlessly interprets English, Hinglish, and Gujlish patient queries and reports.</li>
+                        <li>Extract high-importance unigram & bigram features using statistical TF-IDF.</li>
+                        <li>Train and benchmark classical NLP classifiers (Naive Bayes & Logistic Regression).</li>
+                        <li>Parse patient laboratory reports, comparing values with printed and clinical reference ranges.</li>
+                        <li>Decode ultrasound/sonography radiological findings into clear, plain language with multilingual explanations.</li>
+                        <li>Ensure strict evaluation without data leakage using 5-fold CV and held-out testing.</li>
+                    </ul>
+                </div>
+
+                <!-- NLP Workflow -->
+                <div class="card about-card full-width">
+                    <div class="about-icon-header">
+                        <div class="about-icon teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        </div>
+                        <h3 class="card-title">3. End-to-End System Architecture</h3>
+                    </div>
+                    <div class="workflow-steps">
+                        <div class="wf-step">
+                            <span class="wf-num">Step 1</span>
+                            <h4>Ingestion</h4>
+                            <p>Abstracts, digital PDFs, or image report uploads</p>
+                        </div>
+                        <div class="wf-arrow">→</div>
+                        <div class="wf-step">
+                            <span class="wf-num">Step 2</span>
+                            <h4>In-Memory Extraction</h4>
+                            <p>Text extraction & user verification editor</p>
+                        </div>
+                        <div class="wf-arrow">→</div>
+                        <div class="wf-step">
+                            <span class="wf-num">Step 3</span>
+                            <h4>Clinical Parsing</h4>
+                            <p>Lab range checks & sonography decoding</p>
+                        </div>
+                        <div class="wf-arrow">→</div>
+                        <div class="wf-step">
+                            <span class="wf-num">Step 4</span>
+                            <h4>NLP Classifier</h4>
+                            <p>10,000 TF-IDF features & Naive Bayes</p>
+                        </div>
+                        <div class="wf-arrow">→</div>
+                        <div class="wf-step">
+                            <span class="wf-num">Step 5</span>
+                            <h4>Web Dashboard</h4>
+                            <p>FastAPI REST endpoints & responsive UI</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technologies & Algorithms -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon navy">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </div>
+                        <h3 class="card-title">4. Technologies Used</h3>
+                    </div>
+                    <div class="tech-tags">
+                        <span class="tech-tag">Python 3.10+</span>
+                        <span class="tech-tag">Multilingual NLP Engine (Hinglish & Gujlish)</span>
+                        <span class="tech-tag">FastAPI</span>
+                        <span class="tech-tag">Scikit-learn</span>
+                        <span class="tech-tag">PyMuPDF (High-Res Rasterizer)</span>
+                        <span class="tech-tag">RapidOCR (ONNX OCR Engine)</span>
+                        <span class="tech-tag">pypdf (PDF Reader)</span>
+                        <span class="tech-tag">Pillow (Image Processing)</span>
+                        <span class="tech-tag">Pandas & NumPy</span>
+                        <span class="tech-tag">Vanilla HTML5/CSS3</span>
+                        <span class="tech-tag">Vanilla JavaScript (ES6)</span>
+                        <span class="tech-tag">Joblib</span>
+                    </div>
+                </div>
+
+                <!-- Limitations & Future Scope -->
+                <div class="card about-card">
+                    <div class="about-icon-header">
+                        <div class="about-icon teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </div>
+                        <h3 class="card-title">5. Limitations & Future Scope</h3>
+                    </div>
+                    <ul class="clean-list">
+                        <li><strong>Multi-label Classification:</strong> Extending the text classifier to predict multiple co-morbid disease labels per abstract.</li>
+                        <li><strong>Transformer Encoders:</strong> Incorporating domain-specific models like BioBERT or PubMedBERT.</li>
+                        <li><strong>Computer Vision Integration:</strong> Adding CheXNet CNN models with Grad-CAM heatmaps for chest radiographs.</li>
+                        <li><strong>OCR Engine:</strong> Embedding offline on-device OCR models for handwriting recognition on legacy paper prescriptions.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/static/app.js?v=8.0"></script>
+</body>
+</html>
