@@ -27,7 +27,7 @@
                 </div>
             </div>
 
-            <nav class="nav-links" id="main-nav">
+            <nav class="nav-links desktop-nav" id="main-nav">
                 <button class="nav-btn active" data-tab="tab-analyzer">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     <span>Report Analyzer</span>
@@ -54,9 +54,17 @@
                 </button>
             </nav>
 
-            <div class="header-status-badge">
+            <div class="header-status-badge desktop-status-badge">
                 <span class="pulse-indicator"></span>
                 <span>Ready</span>
+            </div>
+            <!-- Mobile Only Header Status Pill -->
+            <div class="mobile-header-status">
+                <span class="mobile-header-active-tab" id="mobile-header-active-tab">🩺 Report</span>
+                <div class="header-status-badge mobile-compact-badge">
+                    <span class="pulse-indicator"></span>
+                    <span>Ready</span>
+                </div>
             </div>
         </div>
     </header>
@@ -1156,6 +1164,29 @@
     </main>
 
     <script src="/static/app.js?v=9.0"></script>
+        <!-- Mobile Native Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" id="mobile-nav" aria-label="Mobile Navigation">
+        <button type="button" class="mobile-nav-btn nav-btn active" data-tab="tab-analyzer" aria-label="Medical Report Analyzer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Report</span>
+        </button>
+        <button type="button" class="mobile-nav-btn nav-btn" data-tab="tab-classify" aria-label="Biomedical NLP Classifier">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>NLP</span>
+        </button>
+        <button type="button" class="mobile-nav-btn nav-btn" data-tab="tab-performance" aria-label="Model Performance Metrics">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Metrics</span>
+        </button>
+        <button type="button" class="mobile-nav-btn nav-btn" data-tab="tab-dataset" aria-label="Dataset and Corpus">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            <span>Corpus</span>
+        </button>
+        <button type="button" class="mobile-nav-btn nav-btn" data-tab="tab-about" aria-label="About MedReport AI">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>About</span>
+        </button>
+    </nav>
     <div id="toast-container" class="toast-container"></div>
 </body>
 </html>

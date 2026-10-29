@@ -35,24 +35,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ------------------------------------------------------------------------
-    // 1. Navigation / Tab Switching
+    // 1. Unified Navigation / Tab Switching (Desktop & Mobile Synchronized)
     // ------------------------------------------------------------------------
     const navButtons = document.querySelectorAll('.nav-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
+    const mobileHeaderActiveTab = document.getElementById('mobile-header-active-tab');
+
+    const TAB_TITLES = {
+        'tab-analyzer': '🩺 Report Analyzer',
+        'tab-classify': '🧠 NLP Classifier',
+        'tab-performance': '📊 Performance',
+        'tab-dataset': '📚 Medical Corpus',
+        'tab-xray': '🗺️ X-Ray Vision',
+        'tab-about': 'ℹ️ About Project'
+    };
+
+    function switchActiveTab(targetTabId) {
+        if (!targetTabId) return;
+
+        // Synchronize all matching nav buttons (both desktop and mobile bottom bar)
+        navButtons.forEach(b => {
+            if (b.getAttribute('data-tab') === targetTabId) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        // Toggle Tab Panes
+        tabPanes.forEach(p => {
+            if (p.id === targetTabId) {
+                p.classList.add('active');
+            } else {
+                p.classList.remove('active');
+            }
+        });
+
+        // Update Mobile Header Active Label
+        if (mobileHeaderActiveTab && TAB_TITLES[targetTabId]) {
+            mobileHeaderActiveTab.textContent = TAB_TITLES[targetTabId];
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetTabId = btn.getAttribute('data-tab');
-
-            navButtons.forEach(b => b.classList.remove('active'));
-            tabPanes.forEach(p => p.classList.remove('active'));
-
-            btn.classList.add('active');
-            const targetPane = document.getElementById(targetTabId);
-            if (targetPane) {
-                targetPane.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            switchActiveTab(targetTabId);
         });
     });
 
@@ -489,6 +520,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderLabResults(data);
             } else {
                 renderSonographyResults(data);
+            }
+
+            // On mobile / tablet screens, smoothly auto-scroll down to results
+            if (window.innerWidth < 1024) {
+                setTimeout(() => {
+                    const resPanel = document.getElementById('report-results-panel');
+                    if (resPanel) {
+                        resPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
             }
 
         } catch (err) {
@@ -1059,6 +1100,16 @@ document.addEventListener('DOMContentLoaded', () => {
             resCategoryId.textContent = data.predicted_class_id;
             resModelName.textContent = data.model_used;
             resTokenCount.textContent = data.metrics.cleaned_word_count;
+
+            // On mobile / tablet screens, smoothly auto-scroll down to classification probabilities
+            if (window.innerWidth < 1024) {
+                setTimeout(() => {
+                    const resCard = document.getElementById('results-content');
+                    if (resCard) {
+                        resCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            }
 
             probBarsList.innerHTML = '';
             if (data.probabilities && data.probabilities.length > 0) {
