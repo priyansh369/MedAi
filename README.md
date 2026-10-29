@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.4+-F7931E?style=flat&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Vercel Ready](https://img.shields.io/badge/Deploy-Vercel%20Serverless-black?logo=vercel)](https://vercel.com)
 [![Multilingual](https://img.shields.io/badge/Multilingual-English%20%7C%20Hinglish%20%7C%20Gujlish-blue)](#multilingual-support)
 
 A full-stack healthcare Natural Language Processing (NLP) system designed for clinical laboratory report interpretation, abdominal ultrasound analysis, and biomedical abstract classification.
@@ -66,11 +67,7 @@ User Input (PDF / OCR / Text)
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Python 3.10 or higher
-- Git
-
-### Installation
+### Local Setup
 
 1. **Clone the repository:**
    ```bash
@@ -89,7 +86,7 @@ User Input (PDF / OCR / Text)
    source .venv/bin/activate
    ```
 
-3. **Install dependencies:**
+3. **Install production dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
@@ -99,10 +96,18 @@ User Input (PDF / OCR / Text)
    uvicorn app:app --reload --host 127.0.0.1 --port 8000
    ```
 
-5. Open your browser and navigate to:
-   ```
-   http://127.0.0.1:8000
-   ```
+5. Open your browser: `http://127.0.0.1:8000`
+
+---
+
+## ☁️ Deploying on Vercel
+
+This repository is optimized for **Vercel Serverless Functions** (fits well under Vercel's 500 MB Lambda size limit):
+
+1. Import this repository in [Vercel Dashboard](https://vercel.com/new).
+2. Set **Framework Preset** to `Other`.
+3. The included `vercel.json` and `.vercelignore` automatically configure the deployment and exclude offline training datasets (`data/`).
+4. Click **Deploy**.
 
 ---
 
@@ -110,7 +115,10 @@ User Input (PDF / OCR / Text)
 
 ```
 ├── app.py                     # FastAPI application endpoints & sample reports
-├── requirements.txt           # Python package dependencies
+├── vercel.json                # Vercel serverless routing configuration
+├── .vercelignore              # Excludes datasets and offline scripts from lambda bundle
+├── requirements.txt           # Lightweight production serverless dependencies
+├── requirements-dev.txt       # Full local development / training dependencies
 ├── train_models.py            # Model training script for TF-IDF + Naive Bayes / Logistic Regression
 ├── evaluate_models.py         # Evaluation metrics and confusion matrix generator
 ├── medical_classifier.py      # Core inference engine for text categorization
@@ -123,7 +131,7 @@ User Input (PDF / OCR / Text)
 │   ├── app.js                 # Frontend application logic, clipboard paste & dynamic gauges
 │   └── style.css              # Responsive custom styles
 ├── models/                    # Serialized TF-IDF vectorizer and trained Scikit-learn models
-├── data/                      # Medical text classification datasets
+├── data/                      # Medical text classification datasets (offline training)
 └── reports/                   # Performance benchmarks and confusion matrices
 ```
 
@@ -131,4 +139,3 @@ User Input (PDF / OCR / Text)
 
 ## ⚖️ Academic Research Disclaimer
 *This system is developed as an educational mini-project for natural language processing and medical decision-support experimentation. It does not replace certified professional medical judgment or physician consultation.*
-

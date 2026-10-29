@@ -28,8 +28,19 @@ import re
 from typing import Dict, List, Any, Optional
 import numpy as np
 from PIL import Image
-import pymupdf as fitz
-from rapidocr_onnxruntime import RapidOCR
+import pypdf
+
+# Optional OCR & rasterization engines (graceful fallback in lightweight serverless mode)
+try:
+    import pymupdf as fitz
+except ImportError:
+    fitz = None
+
+try:
+    from rapidocr_onnxruntime import RapidOCR
+    ocr_engine = RapidOCR()
+except Exception:
+    ocr_engine = None
 
 from src.multilingual import (
     detect_language,
@@ -37,9 +48,6 @@ from src.multilingual import (
     get_multilingual_sono_explanation,
     MULTILINGUAL_ACUITY
 )
-
-# Initialize OCR Engine once in memory
-ocr_engine = RapidOCR()
 
 # -----------------------------------------------------------------------------
 # Comprehensive Clinical Laboratory Reference Dictionary
@@ -327,15 +335,15 @@ ULTRASOUND_DICTIONARY = {
 # Document OCR & Text Extraction Engine
 # -----------------------------------------------------------------------------
 def run_ocr_on_pil_image(image: Image.Image) -> str:
-    """Runs RapidOCR on a PIL Image and returns structured text lines."""
+    """Runs RapidOCR on a PIL Image if available."""
+    if ocr_engine is None:
+        return ""
     try:
-        # Convert PIL to RGB numpy array
         img_rgb = image.convert("RGB")
         img_np = np.array(img_rgb)
         ocr_result, _ = ocr_engine(img_np)
         if not ocr_result:
             return ""
-        
         extracted_lines = [box[1] for box in ocr_result if box and len(box) > 1 and box[1].strip()]
         return "\n".join(extracted_lines)
     except Exception as e:
@@ -345,32 +353,44 @@ def run_ocr_on_pil_image(image: Image.Image) -> str:
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """
     Extracts text from PDF files:
-    1. First tries direct digital text extraction.
-    2. If text is sparse or missing (e.g. scanned doctor printout),
-       rasterizes PDF pages to images and executes RapidOCR on every page.
+    1. Primary engine: pypdf (pure-Python, lightweight, serverless-ready).
+    2. Fallback to fitz/PyMuPDF if installed.
+    3. If digital text is missing and OCR engine is loaded, executes OCR.
     """
     try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        # 1. Primary extraction via pypdf
+        reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
         extracted_pages = []
-
-        for page_idx in range(len(doc)):
-            page = doc[page_idx]
-            page_text = page.get_text().strip()
-
-            # If digital text exists, use it
-            if len(page_text) > 40:
-                extracted_pages.append(page_text)
-            else:
-                # Page is a scanned image: Render to pixmap and run OCR
-                pix = page.get_pixmap(dpi=200)
-                img = Image.open(io.BytesIO(pix.tobytes("png")))
-                ocr_text = run_ocr_on_pil_image(img)
-                if ocr_text:
-                    extracted_pages.append(ocr_text)
-
+        for page in reader.pages:
+            t = page.extract_text()
+            if t and t.strip():
+                extracted_pages.append(t.strip())
+        
         full_text = "\n\n".join(extracted_pages).strip()
+        if len(full_text) >= 20:
+            return full_text
+
+        # 2. Fallback to fitz / OCR if available
+        if fitz is not None:
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            fitz_pages = []
+            for page_idx in range(len(doc)):
+                page = doc[page_idx]
+                page_text = page.get_text().strip()
+                if len(page_text) > 40:
+                    fitz_pages.append(page_text)
+                elif ocr_engine is not None:
+                    pix = page.get_pixmap(dpi=200)
+                    img = Image.open(io.BytesIO(pix.tobytes("png")))
+                    ocr_t = run_ocr_on_pil_image(img)
+                    if ocr_t:
+                        fitz_pages.append(ocr_t)
+            fitz_full = "\n\n".join(fitz_pages).strip()
+            if fitz_full:
+                return fitz_full
+
         if not full_text:
-            return "[Error: Unable to extract readable characters from this PDF. Please verify the document is not password-protected.]"
+            return "[Notice: PDF appears to be a scanned image without digital text. In lightweight serverless mode, please paste report text directly.]"
         return full_text
     except Exception as e:
         return f"[Error: PDF extraction failed: {str(e)}]"
@@ -378,9 +398,14 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 
 def extract_text_from_image(image_bytes: bytes, filename: str) -> str:
     """
-    Runs full Optical Character Recognition (OCR) on uploaded JPG/PNG reports.
-    Extracts actual patient text, test names, values, and ranges.
+    Extracts text from uploaded images. Uses RapidOCR if installed;
+    otherwise provides clear guidance for serverless environments.
     """
+    if ocr_engine is None:
+        return (
+            f"[Notice: Scanned Image OCR is disabled in lightweight serverless mode to keep bundle under 500 MB.]\n"
+            "Please paste the report text directly into the editor below or upload a digital PDF."
+        )
     try:
         image = Image.open(io.BytesIO(image_bytes))
         ocr_text = run_ocr_on_pil_image(image)
@@ -393,8 +418,6 @@ def extract_text_from_image(image_bytes: bytes, filename: str) -> str:
         return ocr_text
     except Exception as e:
         return f"[Error: Image OCR processing failed: {str(e)}]"
-
-
 # -----------------------------------------------------------------------------
 # Multi-Parameter Clinical Diagnosis Synthesis Engine
 # -----------------------------------------------------------------------------

@@ -1,0 +1,28 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Raw Datasets (17.5 MB - only needed for offline training)
+data/
+
+# Offline Model Training & Evaluation Scripts
+train_models.py
+evaluate_models.py
+inspect_dataset.py
+feature_extraction.py
+preprocess_text.py
+
+# Offline Reports & Test Artifacts
+reports/
+scratch/
+test_*.py
+
+# Git & System Cache
+.git/
+.github/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
