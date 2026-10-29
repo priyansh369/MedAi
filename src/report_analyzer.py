@@ -273,6 +273,16 @@ STANDARD_LAB_DICTIONARY = {
         "low_meaning": "Suppressed TSH indicates Hyperthyroidism (overactive thyroid), causing tachycardia, weight loss, or anxiety.",
         "high_meaning": "Elevated TSH indicates Primary Hypothyroidism (underactive thyroid), leading to fatigue, weight gain, constipation, and cold intolerance.",
         "normal_meaning": "Pituitary-thyroid regulatory feedback is normal."
+    },
+    "urine_protein": {
+        "display_name": "Urine Protein / Albumin",
+        "unit": "dipstick",
+        "low": 0.0,
+        "high": 0.0,
+        "category": "Urinalysis",
+        "low_meaning": "Normal (Negative / Nil) protein excretion.",
+        "high_meaning": "Proteinuria: presence of albumin/protein in urine indicating glomerular filtration barrier impairment, diabetic nephropathy, or renal inflammation.",
+        "normal_meaning": "Negative / Nil: healthy renal glomerular filtration."
     }
 }
 
@@ -894,7 +904,9 @@ def parse_lab_report(text: str, target_lang: Optional[str] = "auto") -> Dict[str
             key_clean = key.replace("_", " ")
             patterns = [key_clean]
             if key == "hemoglobin":
-                patterns.extend(["hb", "hgb", "haemoglobin", "hemoglobin", "khoon", "lohi"])
+                patterns.extend(["hb", "hgb", "haemoglobin", "hemoglobin", "khoon", "lohi", "हीमोग्लोबिन", "હિમોગ્લોબિન", "રક્ત"])
+            elif key == "urine_protein":
+                patterns.extend(["urine protein", "urine albumin", "albumin urine", "protein urine", "peshab me protein", "mutra ma protein"])
             elif key == "wbc":
                 patterns.extend(["total leukocyte", "tlc", "white blood", "leukocytes", "w.b.c", "wbc", "safed kano"])
             elif key == "rbc":
@@ -906,7 +918,7 @@ def parse_lab_report(text: str, target_lang: Optional[str] = "auto") -> Dict[str
             elif key == "esr":
                 patterns.extend(["e.s.r", "erythrocyte sedimentation", "esr"])
             elif key == "glucose_fasting":
-                patterns.extend(["fbs", "fasting sugar", "fasting blood sugar", "glucose fasting", "sugar fasting", "fasting glucose", "sakkar", "madhumeh"])
+                patterns.extend(["fbs", "fasting sugar", "fasting blood sugar", "fasting blood glucose", "blood glucose fasting", "glucose fasting", "sugar fasting", "fasting glucose", "sakkar", "madhumeh"])
             elif key == "glucose_random":
                 patterns.extend(["rbs", "random sugar", "random blood sugar", "glucose random", "post prandial", "ppbs", "random glucose", "sugar"])
             elif key == "hba1c":
@@ -953,10 +965,25 @@ def parse_lab_report(text: str, target_lang: Optional[str] = "auto") -> Dict[str
                 if not num_matches:
                     continue
 
+                # Detect operator (<, >, <=, >=)
+                op_match = re.search(r"([<>]=?)\s*[-+]?\d*\.?\d*", after_text)
+                operator = op_match.group(1) if op_match else ""
+
                 try:
                     measured_val = float(num_matches[0])
                 except ValueError:
                     continue
+
+                # Auto Unit Conversion:
+                # 1. Blood Glucose mmol/L -> mg/dL (1 mmol/L = 18.0182 mg/dL)
+                if key in ["glucose_fasting", "glucose_random"] and ("mmol" in lower_line or (measured_val < 30.0 and measured_val > 1.0)):
+                    measured_val = round(measured_val * 18.0182, 1)
+                # 2. Hemoglobin g/L -> g/dL (e.g. 140 g/L -> 14.0 g/dL)
+                elif key == "hemoglobin" and ("g/l" in lower_line or measured_val > 50.0):
+                    measured_val = round(measured_val / 10.0, 1)
+                # 3. Lipids mmol/L -> mg/dL (1 mmol/L ~ 38.67 mg/dL)
+                elif key in ["total_cholesterol", "triglycerides", "hdl", "ldl"] and ("mmol" in lower_line or (measured_val < 20.0 and measured_val > 0.5)):
+                    measured_val = round(measured_val * 38.67, 1)
 
                 # Range extraction
                 range_match = re.search(r"(\d+(?:\.\d+)?)\s*[-–toTO]+\s*(\d+(?:\.\d+)?)", line)

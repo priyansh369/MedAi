@@ -63,6 +63,29 @@ def detect_language(text: str) -> Dict[str, Any]:
             "hinglish_score": 0
         }
 
+    # Check for Native Devanagari (Hindi) or Gujarati Unicode scripts
+    dev_count = len(re.findall(r"[\u0900-\u097F]", text))
+    guj_script_count = len(re.findall(r"[\u0A80-\u0AFF]", text))
+
+    if dev_count > 2 and dev_count >= guj_script_count:
+        return {
+            "language_code": "hi",
+            "language_name": "Hindi (Devanagari)",
+            "confidence": 0.99,
+            "matched_markers": ["Devanagari Unicode"],
+            "gujlish_score": 0,
+            "hinglish_score": dev_count
+        }
+    elif guj_script_count > 2:
+        return {
+            "language_code": "gu",
+            "language_name": "Gujarati (Native Script)",
+            "confidence": 0.99,
+            "matched_markers": ["Gujarati Unicode"],
+            "gujlish_score": guj_script_count,
+            "hinglish_score": 0
+        }
+
     words = re.findall(r"\b[a-zA-Z]+\b", text.lower())
     if not words:
         return {
@@ -118,6 +141,22 @@ def detect_language(text: str) -> Dict[str, Any]:
 
 # Mapping of colloquial multi-word phrases and single words into target medical keywords
 CLINICAL_TRANSLATION_MAP = [
+    # --- Native Devanagari (Hindi) & Gujarati Script Support ---
+    (r"(?:छाती में दर्द|सीने में दर्द|दिल का दौरा|हार्ट अटैक|हृदय रोग|रक्तचाप|धड़कन|सांस फूलना)", "acute chest pain angina myocardial infarction cardiovascular dyspnea"),
+    (r"(?:હૃદય રોગ|છાતીમાં દુખાવો|હાર્ટ એટેક|ધબકારા|લોહીનું દબાણ|બીપી|શ્વાસ લેવામાં તકલીફ)", "acute chest pain angina myocardial infarction cardiovascular dyspnea"),
+    (r"(?:कैंसर|ट्यूमर|गांठ|रसौली|बायोप्सी)", "malignant neoplasm carcinoma tumor oncology biopsy"),
+    (r"(?:કેન્સર|ગાંઠ|રસોળી|ટ્યુમર|બાયોપ્સી)", "malignant neoplasm carcinoma tumor oncology biopsy"),
+    (r"(?:पेट में दर्द|पेट में पथरी|पीलिया|उल्टी|दस्त|अल्सर|एसिडिटी|फैटी लिवर|पित्त की थैली)", "acute abdominal pain gastric gastrointestinal digestive cholelithiasis jaundice diarrhea"),
+    (r"(?:પેટમાં દુખાવો|પથરી|કમળો|ઉલટી|ઝાડા|એસિડિટી|ફેટી લિવર|પિત્તાશય|ચાંદા)", "acute abdominal pain gastric gastrointestinal digestive cholelithiasis jaundice diarrhea"),
+    (r"(?:लकवा|सिर दर्द|मिर्गी|दौरा|चक्कर|दिमाग की नस)", "cerebrovascular stroke hemiplegia paralysis neurological migraine vertigo seizure"),
+    (r"(?:લકવો|માથું દુખે|ચક્કર|ખેંચ|મગજની નસ|આંચકી)", "cerebrovascular stroke hemiplegia paralysis neurological migraine vertigo seizure"),
+    (r"(?:बुखार|तेज बुखार|सूजन|संक्रमण|खून की कमी|कमजोरी|थकान|घाव)", "pyrexia febrile fever systemic inflammatory pathology edema severe anemia fatigue"),
+    (r"(?:તાવ|સોજો|ઇન્ફેક્શન|લોહીની કમી|અશક્તિ|થાક|ઘા)", "pyrexia febrile fever systemic inflammatory pathology edema severe anemia fatigue"),
+    (r"(?:खून|रक्त|लोही|લોહી)", "blood hemoglobin hematology"),
+    (r"(?:पेशाब|मूत्र|પેશાબ|મૂત્ર)", "urinary renal kidney"),
+    (r"(?:दवा|दवाई|દવા)", "pharmacotherapy medication therapy"),
+    (r"(?:जांच|રિપોર્ટ|તપાસ)", "investigation diagnostic laboratory evaluation"),
+
     # --- Cardiovascular (Category 4) ---
     (r"\b(?:chhati\s+ma\s+dukhavo|chhati\s+dukhe\s+che|chhati\s+ma\s+dard)\b", "acute chest pain angina myocardial infarction cardiovascular"),
     (r"\b(?:seene\s+me\s+dard|seene\s+me\s+jalan|chhati\s+me\s+dard)\b", "acute chest pain angina myocardial infarction cardiovascular"),

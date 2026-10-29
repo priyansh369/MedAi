@@ -10,11 +10,17 @@ Serves:
 - Static assets (HTML, CSS, JS) for the presentation dashboard.
 """
 
+import os
+import sys
+import time
+import logging
 from pathlib import Path
-from typing import Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from typing import Optional, List, Dict, Any
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import joblib
 
@@ -27,6 +33,16 @@ from src.report_analyzer import (
     analyze_sonography_report
 )
 
+# Structured Logging Setup
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger("medreport")
+
+SERVER_START_TIME = time.time()
+
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -35,9 +51,21 @@ DATA_DIR = BASE_DIR / "data"
 
 # Create FastAPI application
 app = FastAPI(
-    title="Medical Text Classification API",
-    description="NLP-powered classification of medical research abstracts across 5 disease categories.",
-    version="1.0.0"
+    title="MedReport AI — Clinical Report Assistant & NLP Classifier",
+    description="Full-stack healthcare NLP platform for clinical pathology interpretation, sonography explanation, and research abstract classification.",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# CORS Middleware (Configurable via env var)
+cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Category ID to Name mapping
@@ -87,6 +115,35 @@ class ClassifyRequest(BaseModel):
 # -----------------------------------------------------------------------------
 # API Endpoints
 # -----------------------------------------------------------------------------
+
+@app.get("/healthz", tags=["System"])
+@app.get("/api/health", tags=["System"])
+def health_check():
+    """Production health probe returning uptime, model status, and runtime environment."""
+    models_status = {}
+    is_healthy = True
+    try:
+        models = get_models()
+        models_status["vectorizer"] = models.get("vectorizer") is not None
+        models_status["naive_bayes"] = models.get("nb_model") is not None
+        models_status["logistic_regression"] = models.get("lr_model") is not None
+        if not (models_status["vectorizer"] and models_status["naive_bayes"]):
+            is_healthy = False
+    except Exception as e:
+        is_healthy = False
+        models_status["error"] = str(e)
+
+    uptime_sec = round(time.time() - SERVER_START_TIME, 2)
+    return {
+        "status": "healthy" if is_healthy else "degraded",
+        "service": "MedReport AI",
+        "version": "2.0.0",
+        "uptime_seconds": uptime_sec,
+        "environment": os.getenv("ENVIRONMENT", "production"),
+        "models_loaded": models_status,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
+
 
 @app.get("/")
 def serve_index():
@@ -154,8 +211,20 @@ def classify_abstract(req: ClassifyRequest):
         # Sort descending by confidence
         probabilities.sort(key=lambda x: x["confidence_score"], reverse=True)
 
+    # Biomedical term density & out-of-distribution guardrail
+    matched_features = int(vectorized.nnz)
+    is_medical = (matched_features > 0) or (trans_info.get("substitutions_made", 0) > 0)
+    warning_notice = None
+    if matched_features == 0 and trans_info.get("substitutions_made", 0) == 0:
+        warning_notice = "Biomedical Domain Guardrail: The entered text contains zero recognized biomedical terminology. Predictions may be unreliable for non-clinical text."
+    elif matched_features <= 2 and len(words) >= 10:
+        warning_notice = "Biomedical Domain Guardrail: Low medical terminology density detected. For optimal classification, provide complete clinical notes."
+
     return {
         "success": True,
+        "is_medical_content": is_medical,
+        "matched_biomedical_features": matched_features,
+        "warning": warning_notice,
         "predicted_class_id": predicted_class_id,
         "predicted_category": predicted_category,
         "category_description": CATEGORY_DESCRIPTIONS.get(predicted_category, ""),
@@ -175,6 +244,7 @@ def classify_abstract(req: ClassifyRequest):
 
 
 @app.get("/api/metrics")
+@app.get("/api/model-metrics")
 def get_model_metrics():
     """Returns actual verified evaluation metrics on the 2,888 test abstracts."""
     return {
@@ -386,6 +456,21 @@ async def upload_medical_report(file: UploadFile = File(...)):
     
     if len(content) > 15 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size exceeds 15 MB limit.")
+
+    # Magic-byte file validation to prevent file spoofing
+    magic_valid = False
+    if ext == ".pdf" and content.startswith(b"%PDF-"):
+        magic_valid = True
+    elif ext == ".png" and content.startswith(b"\x89PNG\r\n\x1a\n"):
+        magic_valid = True
+    elif ext in [".jpg", ".jpeg"] and content.startswith(b"\xff\xd8\xff"):
+        magic_valid = True
+
+    if not magic_valid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Security Alert: Uploaded file does not match a valid {ext.upper()} binary header signature."
+        )
 
     if ext == ".pdf":
         extracted_text = extract_text_from_pdf(content)
@@ -660,10 +745,25 @@ def get_xray_roadmap():
         )
     }
 
-# Prevent stale browser caching during development and demonstration
+# Production Security, Timing & Caching Middleware
 @app.middleware("http")
-async def add_no_cache_headers(request, call_next):
-    response = await call_next(request)
+async def security_and_timing_middleware(request: Request, call_next):
+    start_time = time.time()
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        logger.error(f"Unhandled exception processing {request.method} {request.url.path}: {str(exc)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error occurred while processing your request."}
+        )
+
+    duration_ms = round((time.time() - start_time) * 1000, 2)
+    response.headers["X-Process-Time-Ms"] = str(duration_ms)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
     if request.url.path.startswith("/static/") or request.url.path == "/":
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"

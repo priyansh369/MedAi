@@ -12,6 +12,29 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------------
+    // Industry-Ready Global Toast Notification Utility
+    // ------------------------------------------------------------------------
+    function showToast(message, type = 'info', duration = 3500) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        let icon = 'ℹ️';
+        if (type === 'success') icon = '✅';
+        else if (type === 'error') icon = '❌';
+        else if (type === 'warning') icon = '⚠️';
+
+        toast.innerHTML = `<span style="font-size: 1.1rem; flex-shrink: 0;">${icon}</span><span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(15px) scale(0.95)';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // ------------------------------------------------------------------------
     // 1. Navigation / Tab Switching
     // ------------------------------------------------------------------------
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -44,6 +67,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeFileBtn = document.getElementById('remove-file-btn');
 
     const reportTypeSelector = document.getElementById('report-type-selector');
+    // Report Action Buttons (Print PDF & Copy Summary)
+    const reportActionButtons = document.getElementById('report-action-buttons');
+    const printReportBtn = document.getElementById('print-report-btn');
+    const copySummaryBtn = document.getElementById('copy-summary-btn');
+
+    if (printReportBtn) {
+        printReportBtn.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
+    if (copySummaryBtn) {
+        copySummaryBtn.addEventListener('click', async () => {
+            try {
+                let summaryLines = ["=== MEDREPORT AI - CLINICAL SUMMARY ==="];
+                const activeTab = reportTypeSelector.value;
+                summaryLines.push(`Report Type: ${activeTab === 'lab' ? 'Laboratory Panel' : 'Abdominal Sonography'}`);
+                
+                const normalBox = document.getElementById('normal-reassurance-box');
+                const directBox = document.getElementById('direct-conditions-box');
+                const sonoNormalBox = document.getElementById('sono-normal-reassurance-box');
+                const sonoDirectBox = document.getElementById('sono-direct-conditions-box');
+
+                if (normalBox && normalBox.classList.contains('active-visible')) {
+                    const title = document.getElementById('normal-reassurance-title')?.textContent || '';
+                    const msg = document.getElementById('normal-reassurance-msg')?.textContent || '';
+                    summaryLines.push(`Status: 100% HEALTHY - NO DOCTOR NEEDED`);
+                    summaryLines.push(title);
+                    summaryLines.push(msg);
+                } else if (sonoNormalBox && sonoNormalBox.classList.contains('active-visible')) {
+                    const title = document.getElementById('sono-normal-title')?.textContent || '';
+                    const msg = document.getElementById('sono-normal-msg')?.textContent || '';
+                    summaryLines.push(`Status: 100% HEALTHY - NO DOCTOR NEEDED`);
+                    summaryLines.push(title);
+                    summaryLines.push(msg);
+                } else {
+                    const activeCondBox = activeTab === 'lab' ? directBox : sonoDirectBox;
+                    if (activeCondBox && activeCondBox.classList.contains('active-visible')) {
+                        const items = activeCondBox.querySelectorAll('.direct-cond-item');
+                        summaryLines.push(`Detected Conditions (${items.length}):`);
+                        items.forEach(it => {
+                            const title = it.querySelector('.direct-cond-title')?.textContent.trim();
+                            const act = it.querySelector('.direct-cond-action')?.textContent.trim();
+                            if (title) summaryLines.push(`- ${title}`);
+                            if (act) summaryLines.push(`  Action: ${act}`);
+                        });
+                    }
+                    if (activeTab === 'lab') {
+                        const impression = document.getElementById('diagnosis-impression-text')?.textContent.trim();
+                        if (impression) summaryLines.push(`Clinical Impression: ${impression}`);
+                    } else {
+                        const sonoImp = document.getElementById('sono-impression-text')?.textContent.trim();
+                        if (sonoImp) summaryLines.push(`Radiological Impression: ${sonoImp}`);
+                    }
+                }
+
+                summaryLines.push("Notice: For clinical verification only. Consult a licensed physician.");
+                const textToCopy = summaryLines.join('\n');
+                await navigator.clipboard.writeText(textToCopy);
+                showToast('Diagnostic summary copied to clipboard!', 'success');
+            } catch (err) {
+                showToast('Failed to copy summary to clipboard', 'error');
+            }
+        });
+    }
+
     const reportLangSelector = document.getElementById('report-lang-selector');
     const reportSampleButtons = document.getElementById('report-sample-buttons');
     const reportTextInput = document.getElementById('report-text-input');
@@ -84,9 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update Report Text Counters
     function updateReportCounters() {
         const text = reportTextInput.value;
-        reportCharCounter.textContent = `${text.length.toLocaleString()} characters`;
+        if (reportCharCounter) reportCharCounter.textContent = `${text.length.toLocaleString()} characters`;
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-        reportWordCounter.textContent = `${words.toLocaleString()} words`;
+        if (reportWordCounter) reportWordCounter.textContent = `${words.toLocaleString()} words`;
+        const compactBadge = document.getElementById('report-char-count');
+        if (compactBadge) compactBadge.textContent = `${words.toLocaleString()} words | ${text.length.toLocaleString()} chars`;
         if (text.trim().length > 0) {
             hideReportError();
         }
@@ -294,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             reportTextInput.value = data.extracted_text;
             updateReportCounters();
+            showToast(`Report extracted successfully from ${file.name}`, 'success');
 
             // Auto-detect type if sonography/ultrasound mentioned
             if (data.extracted_text.toLowerCase().includes('ultrasound') || data.extracted_text.toLowerCase().includes('sonography')) {
@@ -304,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             showReportError(err.message || 'Error occurred while processing file.');
+            showToast(err.message || 'Error processing report file', 'error');
             resetReportBadge();
         } finally {
             analyzeReportBtn.disabled = false;
@@ -320,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideReportError();
 
         reportResultsEmpty.style.display = 'block';
+        if (reportActionButtons) reportActionButtons.style.display = 'none';
         labResultsContent.style.display = 'none';
         sonographyResultsContent.style.display = 'none';
         if (clinicalDiagnosisBox) clinicalDiagnosisBox.style.display = 'none';
@@ -383,6 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             reportResultsEmpty.style.display = 'none';
             reportLiveBadge.textContent = 'ANALYZED';
+            if (reportActionButtons) reportActionButtons.style.display = 'inline-flex';
+            showToast('Clinical report analyzed successfully!', 'success');
 
             if (reportLangPill && data.detected_language) {
                 reportLangPill.style.display = 'inline-flex';
@@ -942,6 +1038,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     resMultilingualBanner.style.display = 'none';
                 }
+            }
+
+            // Biomedical Domain Guardrail (OOD Alert)
+            const oodWarning = document.getElementById('abstract-ood-warning');
+            const oodMsg = document.getElementById('abstract-ood-msg');
+            if (data.warning) {
+                if (oodWarning && oodMsg) {
+                    oodMsg.textContent = data.warning;
+                    oodWarning.style.display = 'flex';
+                }
+                showToast(data.warning, 'warning', 5000);
+            } else {
+                if (oodWarning) oodWarning.style.display = 'none';
+                showToast(`Classification complete: ${data.predicted_category}`, 'success');
             }
 
             resCategoryName.textContent = `[${data.predicted_class_id}] ${data.predicted_category}`;
