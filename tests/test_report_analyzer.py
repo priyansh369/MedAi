@@ -138,3 +138,56 @@ def test_sonography_report_parsing_cholelithiasis():
     assert res["is_all_normal"] is False
     cond_ids = [c["id"] for c in res["directly_identified_conditions"]]
     assert "cholelithiasis" in cond_ids or "gallstones" in cond_ids
+
+
+def test_direct_disease_identification_tuberculosis():
+    report_text = """
+    CLINICAL MOLECULAR PATHOLOGY
+    Specimen: Sputum
+    GeneXpert MTB/RIF: MTB DETECTED (High bacterial load)
+    Sputum AFB Smear: Positive for Acid Fast Bacilli (2+)
+    ESR: 65 mm/hr
+    """
+    res = parse_lab_report(report_text)
+    assert res["success"] is True
+    assert res["is_all_normal"] is False
+    assert res["doctor_needed"] is True
+    assert res["normal_reassurance"] is None
+
+    cond_ids = [c["id"] for c in res["directly_identified_conditions"]]
+    assert "tuberculosis" in cond_ids
+
+
+def test_direct_disease_identification_bronchitis():
+    report_text = """
+    CHEST CLINIC EVALUATION
+    Patient presenting with persistent cough and wheezing for 1 week.
+    Clinical Impression: Acute Bronchitis with airway hyper-responsiveness.
+    WBC: 11200 /mcL
+    """
+    res = parse_lab_report(report_text)
+    assert res["success"] is True
+    assert res["is_all_normal"] is False
+    assert res["doctor_needed"] is True
+    assert res["normal_reassurance"] is None
+
+    cond_ids = [c["id"] for c in res["directly_identified_conditions"]]
+    assert "bronchitis" in cond_ids
+
+
+def test_truthful_normal_negation_not_flagging_tb():
+    # When report explicitly says "no tuberculosis / negative for AFB", it must NOT flag TB
+    report_text = """
+    CHEST X-RAY & SPUTUM TEST
+    Hemoglobin: 14.2 g/dL (13.0 - 17.0)
+    Fasting Blood Sugar: 88 mg/dL (70 - 100)
+    Serum Creatinine: 0.9 mg/dL (0.6 - 1.2)
+    Sputum AFB: Negative for Acid Fast Bacilli.
+    Chest X-Ray: Lung fields clear. No evidence of tuberculosis or bronchitis.
+    """
+    res = parse_lab_report(report_text)
+    assert res["success"] is True
+    assert res["is_all_normal"] is True
+    assert res["doctor_needed"] is False
+    assert res["normal_reassurance"] is not None
+    assert len(res["directly_identified_conditions"]) == 0

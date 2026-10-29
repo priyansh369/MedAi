@@ -841,6 +841,148 @@ def detect_direct_conditions(raw_text: str, parsed_tests: List[Dict[str, Any]], 
             }
         })
 
+    # 8. Tuberculosis (Pulmonary TB / Koch's / Mycobacterium)
+    is_tb = has_positive_finding(raw_text, [
+        "tuberculosis", "tubercular", "mycobacterium tuberculosis", "mtb detected",
+        "mtb positive", "m. tuberculosis", "koch's", "kochs", "afb positive",
+        "afb smear positive", "acid fast bacilli positive", "acid fast bacilli seen",
+        "mantoux positive", "mantoux reactive", "cbnaat positive", "genexpert positive",
+        "tb positive", "pulmonary tb", "t.b. positive", "टीबी", "ક્ષય"
+    ])
+    if is_tb:
+        conditions.append({
+            "id": "tuberculosis",
+            "name": "Tuberculosis (Pulmonary / Extrapulmonary TB - Mycobacterium)",
+            "badge": "POSITIVE SEROLOGY / AFB DETECTED",
+            "severity": "CRITICAL",
+            "icon": "🫁",
+            "summary": {
+                "en": "Laboratory serology, molecular GeneXpert, or AFB sputum smear indicates active Mycobacterium Tuberculosis infection.",
+                "hinglish": "Test report me Tuberculosis (TB / टीबी / Koch's) positive paya gaya hai — turant complete treatment zaroori hai.",
+                "gujlish": "Report ma Tuberculosis (TB / ક્ષય) positive aavyu che — turant chest specialist doctor pase javu jaruri che."
+            },
+            "recommendation": {
+                "en": "Consult a Pulmonologist/Chest Physician immediately. Begin complete prescribed Anti-Tubercular Therapy (DOTS/ATT) without skipping doses. Wear an N95/surgical mask to prevent aerosol transmission.",
+                "hinglish": "Turant Chest Specialist (Pulmonologist) se milein. DOTS/ATT dawai ka poora course bina roke lein aur mask pehnein.",
+                "gujlish": "Turant Chest Specialist doctor pase javu. TB ni dawa (DOTS) no pura course niyamit lo ane mask pahero."
+            }
+        })
+
+    # 9. Bronchitis / Airway Inflammation / Bronchospasm
+    is_bronchitis = has_positive_finding(raw_text, [
+        "bronchitis", "acute bronchitis", "chronic bronchitis", "bronchial inflammation",
+        "bronchial wall thickening", "peribronchial cuffing", "bronchospasm",
+        "bronchial asthma", "wheezing with bronchitis", "bronchiectasis"
+    ])
+    if is_bronchitis:
+        conditions.append({
+            "id": "bronchitis",
+            "name": "Bronchitis / Acute Bronchial Inflammation",
+            "badge": "AIRWAY INFLAMMATION",
+            "severity": "HIGH",
+            "icon": "🫁",
+            "summary": {
+                "en": "Evidence of bronchial inflammation, airway hyper-responsiveness, or bronchial wall thickening causing persistent cough and breathing discomfort.",
+                "hinglish": "Shwas naliyon (bronchial tubes) me sujan / Bronchitis paya gaya hai — khansi aur saans lene me takleef ka direct sanket.",
+                "gujlish": "Shwas nali ma sojo / Bronchitis no sanket che — udhras ane shwas levama takleef thay shake che."
+            },
+            "recommendation": {
+                "en": "Consult a Physician or Pulmonologist. Steam inhalation, prescribed bronchodilators/anti-inflammatory inhalers, avoid cold drinks, dust, and smoke triggers.",
+                "hinglish": "Doctor se milein. Bhaap (steam) lein, dhool aur dhuen se bachein, prescribed inhaler/dawai niyamit lein.",
+                "gujlish": "Doctor ni salah lo. Bhaf (steam) lo, dhul ane dhuvada thi door raho, garm paani pivo."
+            }
+        })
+
+    # 10. Pneumonia / Pulmonary Consolidation
+    is_pneumonia = has_positive_finding(raw_text, [
+        "pneumonia", "pulmonary consolidation", "lung consolidation", "pneumonic patch",
+        "patchy consolidation", "lobar pneumonia", "bronchopneumonia", "lrti"
+    ])
+    if is_pneumonia:
+        conditions.append({
+            "id": "pneumonia",
+            "name": "Pneumonia / Acute Pulmonary Consolidation",
+            "badge": "LUNG INFECTION",
+            "severity": "CRITICAL",
+            "icon": "🫁",
+            "summary": {
+                "en": "Acute infectious pulmonary consolidation or infiltrates detected in lung parenchyma.",
+                "hinglish": "Pneumonia / Phepdon (lungs) me infection aur sujan payi gayi hai.",
+                "gujlish": "Pneumonia / Fefsa ma infection ane sojo darshave che."
+            },
+            "recommendation": {
+                "en": "Seek prompt medical care for targeted antibiotic/antiviral treatment and monitor oxygen saturation (SpO2) closely.",
+                "hinglish": "Turant doctor se milkar antibiotic shuru karein aur oxygen level (SpO2) check karte rahein.",
+                "gujlish": "Turant doctor pase javu, antibiotic sharu karo ane oxygen level tapaso."
+            }
+        })
+
+    # 11. Urinary Tract Infection (UTI / Active Pyuria)
+    is_uti = has_positive_finding(raw_text, [
+        "urinary tract infection", "acute uti", "pyuria", "pus cells: 15-20", "pus cells: 20-25",
+        "pus cells: >", "pus cells loaded", "plenty pus cells", "bacteriuria", "e. coli in urine",
+        "peshab me infection", "mutra marg infection"
+    ]) or (get_v("urine_protein") and get_v("urine_protein") > 0 and any(p in lower for p in ["pus cells", "dysuria", "burning"]))
+    if is_uti:
+        conditions.append({
+            "id": "uti",
+            "name": "Urinary Tract Infection (UTI / Active Pyuria)",
+            "badge": "POSITIVE BACTERIURIA",
+            "severity": "HIGH",
+            "icon": "🧪",
+            "summary": {
+                "en": "Urinalysis indicates active bacterial infection with significant pus cells/leukocyturia.",
+                "hinglish": "Peshab ki jaanch me infection (UTI / Pus cells) paya gaya hai.",
+                "gujlish": "Peshab ni tapas ma infection (UTI / Pus cells) dekhay che."
+            },
+            "recommendation": {
+                "en": "Consult a physician for culture-sensitive antibiotic therapy. Drink 2.5-3 liters of water daily to flush the urinary tract.",
+                "hinglish": "Doctor se prescribed antibiotic lein aur khoob paani (2.5-3 liter) piyein.",
+                "gujlish": "Doctor ae bataveli antibiotic dawa lo ane purto paani (2.5-3 liter) pivo."
+            }
+        })
+
+    # 12. Thyroid Dysfunction (Hypothyroidism / Hyperthyroidism)
+    tsh_val = get_v("tsh")
+    if (tsh_val and tsh_val > 5.5) or has_positive_finding(raw_text, ["hypothyroidism", "hypothyroid", "elevated tsh"]):
+        tsh_note = f" (TSH: {tsh_val} uIU/mL)" if tsh_val else ""
+        conditions.append({
+            "id": "hypothyroidism",
+            "name": f"Hypothyroidism / Sluggish Thyroid Function{tsh_note}",
+            "badge": "ELEVATED TSH",
+            "severity": "MEDIUM",
+            "icon": "🦋",
+            "summary": {
+                "en": f"Elevated TSH{tsh_note} indicating an underactive thyroid gland (sluggish metabolic rate).",
+                "hinglish": f"TSH badha hua hai{tsh_note} — Hypothyroidism (Thyroid kam hormone bana raha hai).",
+                "gujlish": f"TSH vadheli che{tsh_note} — Hypothyroidism (Thyroid gland dhimu kaam kare che)."
+            },
+            "recommendation": {
+                "en": "Consult an Endocrinologist for Free T3/T4 testing and titration of thyroid hormone replacement (Levothyroxine).",
+                "hinglish": "Endocrinologist doctor se milein aur thyroid dawa (Thyroxine) shuru karein.",
+                "gujlish": "Thyroid na specialist doctor pase javu ane dawa sharu karavi."
+            }
+        })
+    elif (tsh_val and tsh_val < 0.35) or has_positive_finding(raw_text, ["hyperthyroidism", "hyperthyroid", "suppressed tsh"]):
+        tsh_note = f" (TSH: {tsh_val} uIU/mL)" if tsh_val else ""
+        conditions.append({
+            "id": "hyperthyroidism",
+            "name": f"Hyperthyroidism / Overactive Thyroid{tsh_note}",
+            "badge": "SUPPRESSED TSH",
+            "severity": "HIGH",
+            "icon": "🦋",
+            "summary": {
+                "en": f"Suppressed TSH{tsh_note} indicating excessive thyroid hormone production.",
+                "hinglish": f"TSH bohot kam hai{tsh_note} — Hyperthyroidism (Thyroid zaroorat se zyada hormone bana raha hai).",
+                "gujlish": f"TSH ghanu ochhu che{tsh_note} — Hyperthyroidism darshave che."
+            },
+            "recommendation": {
+                "en": "Consult an Endocrinologist to evaluate for Graves' disease or toxic nodules. Avoid iodine-rich supplements.",
+                "hinglish": "Turant thyroid doctor se milein aur proper checkup karayein.",
+                "gujlish": "Turant specialist doctor pase check karavo."
+            }
+        })
+
     return conditions
 
 

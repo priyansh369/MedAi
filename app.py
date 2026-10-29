@@ -518,6 +518,42 @@ def get_sample_medical_reports():
     """
     return [
         {
+            "id": "tb_sputum_report",
+            "title": "[English] Pulmonary Tuberculosis (AFB Smear & GeneXpert Positive)",
+            "language": "English",
+            "type": "lab",
+            "snippet": (
+                "CLINICAL MICROBIOLOGY & MOLECULAR PATHOLOGY REPORT\n"
+                "Patient: R. Sharma   Age: 38   Sex: Male\n"
+                "Specimen: Early Morning Sputum (Purulent)\n\n"
+                "TEST INVESTIGATION                  RESULT                  REFERENCE RANGE\n"
+                "Sputum ZN Smear (AFB)               Positive (2+ seen)      Negative\n"
+                "GeneXpert MTB/RIF                   MTB DETECTED (High)     Not Detected\n"
+                "Rifampicin Resistance                NOT DETECTED            Sensitive\n"
+                "Erythrocyte Sedimentation (ESR)      68 mm/hr                0 - 15 mm/hr\n"
+                "Total Leukocyte Count (WBC)         12800 /mcL              4000 - 11000\n"
+                "Hemoglobin                          10.8 g/dL               13.0 - 17.0\n\n"
+                "CLINICAL IMPRESSION: Active Pulmonary Tuberculosis with elevated inflammatory markers."
+            )
+        },
+        {
+            "id": "bronchitis_pulmonary_report",
+            "title": "[English] Acute Bronchitis with Airway Hyper-responsiveness",
+            "language": "English",
+            "type": "lab",
+            "snippet": (
+                "CHEST CLINIC & PULMONARY EVALUATION\n"
+                "Patient: K. Mehta   Age: 29   Sex: Female\n"
+                "Chief Complaints: Severe persistent productive cough, wheezing, low grade fever for 6 days.\n\n"
+                "DIAGNOSTIC FINDINGS:\n"
+                "- Chest Examination: Diffuse rhonchi, prolonged expiratory phase, peribronchial cuffing.\n"
+                "- Clinical Impression: Acute Bronchitis with reactive airway bronchospasm.\n"
+                "Total Leukocyte Count (WBC): 11400 /mcL (4000 - 11000)\n"
+                "Hemoglobin: 13.5 g/dL (12.0 - 15.5)\n"
+                "Oxygen Saturation (SpO2): 97% on room air"
+            )
+        },
+        {
             "id": "normal_health_lab",
             "title": "[English] Normal Health Profile (All Normal - No Doctor Needed)",
             "language": "English",
