@@ -109,53 +109,139 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Helper function to build formatted clinical report for WhatsApp & Clipboard
+    function buildFormattedClinicalReport(isWhatsApp = false) {
+        const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const activeTab = reportTypeSelector.value;
+        const typeName = activeTab === 'lab' ? 'Laboratory Pathology Panel' : 'Abdominal Sonography Report';
+
+        let lines = [];
+        if (isWhatsApp) {
+            lines.push(`*🏥 MEDREPORT AI — CLINICAL PATIENT SUMMARY*`);
+            lines.push(`📅 *Date:* ${dateStr}`);
+            lines.push(`📋 *Investigation:* ${typeName}\n`);
+        } else {
+            lines.push(`=== MEDREPORT AI - CLINICAL SUMMARY ===`);
+            lines.push(`Date: ${dateStr}`);
+            lines.push(`Report Type: ${typeName}`);
+        }
+
+        const normalBox = document.getElementById('normal-reassurance-box');
+        const directBox = document.getElementById('direct-conditions-box');
+        const sonoNormalBox = document.getElementById('sono-normal-reassurance-box');
+        const sonoDirectBox = document.getElementById('sono-direct-conditions-box');
+
+        const isTrulyNormal = (normalBox && normalBox.classList.contains('active-visible')) ||
+                              (sonoNormalBox && sonoNormalBox.classList.contains('active-visible'));
+
+        if (isTrulyNormal) {
+            if (isWhatsApp) {
+                lines.push(`🟢 *STATUS: 100% HEALTHY — NO DOCTOR NEEDED*`);
+                lines.push(`✅ All tested diagnostic parameters fall well within standard physiological healthy intervals.`);
+                lines.push(`💡 *Advice:* Maintain your regular healthy diet, exercise, and active hydration.`);
+            } else {
+                lines.push(`Status: 100% HEALTHY - NO DOCTOR NEEDED`);
+                lines.push(`All tested parameters fall within standard healthy reference intervals.`);
+            }
+        } else {
+            const activeCondBox = activeTab === 'lab' ? directBox : sonoDirectBox;
+            const condItems = activeCondBox ? activeCondBox.querySelectorAll('.direct-cond-item') : [];
+
+            if (isWhatsApp) {
+                lines.push(`🔴 *STATUS: CLINICAL ATTENTION NEEDED*`);
+                if (condItems.length > 0) {
+                    lines.push(`\n⚠️ *Identified Diseases & Pathologies (${condItems.length}):*`);
+                    condItems.forEach(it => {
+                        const title = it.querySelector('.direct-cond-title')?.textContent.trim();
+                        const act = it.querySelector('.direct-cond-action')?.textContent.trim();
+                        if (title) lines.push(`• *${title}*`);
+                        if (act) lines.push(`   👉 _Action:_ ${act}`);
+                    });
+                }
+            } else {
+                lines.push(`Status: CLINICAL ATTENTION NEEDED`);
+                if (condItems.length > 0) {
+                    lines.push(`Detected Conditions (${condItems.length}):`);
+                    condItems.forEach(it => {
+                        const title = it.querySelector('.direct-cond-title')?.textContent.trim();
+                        const act = it.querySelector('.direct-cond-action')?.textContent.trim();
+                        if (title) lines.push(`- ${title}`);
+                        if (act) lines.push(`  Action: ${act}`);
+                    });
+                }
+            }
+
+            // Key impressions
+            if (activeTab === 'lab') {
+                const impression = document.getElementById('diagnosis-impression-text')?.textContent.trim();
+                if (impression) {
+                    lines.push(isWhatsApp ? `\n🩺 *Diagnostic Impression:*\n${impression}` : `Clinical Impression: ${impression}`);
+                }
+            } else {
+                const sonoImp = document.getElementById('sono-impression-text')?.textContent.trim();
+                if (sonoImp) {
+                    lines.push(isWhatsApp ? `\n📡 *Radiological Impression:*\n${sonoImp}` : `Radiological Impression: ${sonoImp}`);
+                }
+            }
+        }
+
+        if (isWhatsApp) {
+            lines.push(`\n_⚠️ Note: Automated AI summary for physician verification. Not an unconditional prescription._`);
+            lines.push(`🌐 _Verified via MedReport AI Platform_`);
+        } else {
+            lines.push(`\nNotice: For clinical verification only. Consult a certified medical doctor.`);
+        }
+
+        return lines.join('\n');
+    }
+
+    // WhatsApp Share Button Handler
+    const whatsappShareBtn = document.getElementById('whatsapp-share-btn');
+    if (whatsappShareBtn) {
+        whatsappShareBtn.addEventListener('click', () => {
+            try {
+                const reportMsg = buildFormattedClinicalReport(true);
+                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(reportMsg)}`;
+                window.open(waUrl, '_blank');
+                showToast('Opening WhatsApp with clinical summary...', 'success', 3000);
+            } catch (err) {
+                showToast('Could not open WhatsApp', 'error');
+            }
+        });
+    }
+
+    // Abstract Tab WhatsApp Share Button Handler
+    const abstractWhatsappBtn = document.getElementById('abstract-whatsapp-btn');
+    if (abstractWhatsappBtn) {
+        abstractWhatsappBtn.addEventListener('click', () => {
+            try {
+                const catName = document.getElementById('res-category-name')?.textContent || '';
+                const catDesc = document.getElementById('res-category-desc')?.textContent || '';
+                const model = document.getElementById('res-model-name')?.textContent || '';
+
+                const lines = [
+                    `*🧠 MEDREPORT AI — NLP CLASSIFICATION REPORT*`,
+                    `📅 *Date:* ${new Date().toLocaleDateString('en-GB')}`,
+                    `\n🎯 *Predicted Category:* ${catName}`,
+                    `📖 *Clinical Scope:* ${catDesc}`,
+                    `⚙️ *Model Engine:* ${model}`,
+                    `\n_⚠️ Generated via MedReport AI Biomedical NLP Classifier_`
+                ];
+
+                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join('\n'))}`;
+                window.open(waUrl, '_blank');
+                showToast('Opening WhatsApp with classification...', 'success', 3000);
+            } catch (err) {
+                showToast('Could not open WhatsApp', 'error');
+            }
+        });
+    }
+
+
     if (copySummaryBtn) {
         copySummaryBtn.addEventListener('click', async () => {
             try {
-                let summaryLines = ["=== MEDREPORT AI - CLINICAL SUMMARY ==="];
-                const activeTab = reportTypeSelector.value;
-                summaryLines.push(`Report Type: ${activeTab === 'lab' ? 'Laboratory Panel' : 'Abdominal Sonography'}`);
-                
-                const normalBox = document.getElementById('normal-reassurance-box');
-                const directBox = document.getElementById('direct-conditions-box');
-                const sonoNormalBox = document.getElementById('sono-normal-reassurance-box');
-                const sonoDirectBox = document.getElementById('sono-direct-conditions-box');
-
-                if (normalBox && normalBox.classList.contains('active-visible')) {
-                    const title = document.getElementById('normal-reassurance-title')?.textContent || '';
-                    const msg = document.getElementById('normal-reassurance-msg')?.textContent || '';
-                    summaryLines.push(`Status: 100% HEALTHY - NO DOCTOR NEEDED`);
-                    summaryLines.push(title);
-                    summaryLines.push(msg);
-                } else if (sonoNormalBox && sonoNormalBox.classList.contains('active-visible')) {
-                    const title = document.getElementById('sono-normal-title')?.textContent || '';
-                    const msg = document.getElementById('sono-normal-msg')?.textContent || '';
-                    summaryLines.push(`Status: 100% HEALTHY - NO DOCTOR NEEDED`);
-                    summaryLines.push(title);
-                    summaryLines.push(msg);
-                } else {
-                    const activeCondBox = activeTab === 'lab' ? directBox : sonoDirectBox;
-                    if (activeCondBox && activeCondBox.classList.contains('active-visible')) {
-                        const items = activeCondBox.querySelectorAll('.direct-cond-item');
-                        summaryLines.push(`Detected Conditions (${items.length}):`);
-                        items.forEach(it => {
-                            const title = it.querySelector('.direct-cond-title')?.textContent.trim();
-                            const act = it.querySelector('.direct-cond-action')?.textContent.trim();
-                            if (title) summaryLines.push(`- ${title}`);
-                            if (act) summaryLines.push(`  Action: ${act}`);
-                        });
-                    }
-                    if (activeTab === 'lab') {
-                        const impression = document.getElementById('diagnosis-impression-text')?.textContent.trim();
-                        if (impression) summaryLines.push(`Clinical Impression: ${impression}`);
-                    } else {
-                        const sonoImp = document.getElementById('sono-impression-text')?.textContent.trim();
-                        if (sonoImp) summaryLines.push(`Radiological Impression: ${sonoImp}`);
-                    }
-                }
-
-                summaryLines.push("Notice: For clinical verification only. Consult a licensed physician.");
-                const textToCopy = summaryLines.join('\n');
+                const textToCopy = buildFormattedClinicalReport(false);
                 await navigator.clipboard.writeText(textToCopy);
                 showToast('Diagnostic summary copied to clipboard!', 'success');
             } catch (err) {
@@ -1108,6 +1194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         hideAbstractError();
         resultsEmpty.style.display = 'block';
         resultsContent.style.display = 'none';
+        const absActionBtns = document.getElementById('abstract-action-buttons');
+        if (absActionBtns) absActionBtns.style.display = 'none';
         if (classifyLangPill) classifyLangPill.style.display = 'none';
         if (resMultilingualBanner) resMultilingualBanner.style.display = 'none';
         liveBadge.textContent = 'READY';
@@ -1183,6 +1271,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Classification complete: ${data.predicted_category}`, 'success');
             }
 
+            const absActionBtns = document.getElementById('abstract-action-buttons');
+            if (absActionBtns) absActionBtns.style.display = 'inline-flex';
             resCategoryName.textContent = `[${data.predicted_class_id}] ${data.predicted_category}`;
             resCategoryDesc.textContent = data.category_description;
             resCategoryId.textContent = data.predicted_class_id;
