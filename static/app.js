@@ -322,12 +322,60 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/report/sample-reports');
             if (!res.ok) throw new Error();
-            allReportSamples = await res.json();
+                        allReportSamples = await res.json();
+            populateReportSampleDropdown();
             renderReportSampleButtons(activeReportFilter);
         } catch (e) {
             reportSampleButtons.innerHTML = '<span class="sample-pill-loading">Failed to load report samples</span>';
         }
     }
+    
+    // Populate Quick Test Sample Dropdown (Space-Saving Arrow Down Selector)
+    function populateReportSampleDropdown() {
+        const select = document.getElementById('report-sample-select');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select a sample report... ▼</option>';
+        allReportSamples.forEach((s, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            let icon = s.type === 'sonography' ? '📡' : '🔬';
+            opt.textContent = `${icon} ${s.title}`;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', () => {
+            const val = select.value;
+            if (val !== '' && allReportSamples[val]) {
+                const s = allReportSamples[val];
+                reportTextInput.value = s.text;
+                updateReportCounters();
+                hideReportError();
+                if (s.type) reportTypeSelector.value = s.type;
+                if (s.language && reportLangSelector) {
+                    const l = s.language.toLowerCase();
+                    if (['english', 'hinglish', 'gujlish'].includes(l)) {
+                        reportLangSelector.value = l;
+                    }
+                }
+                showToast(`Loaded: ${s.title}`, 'info', 2200);
+            }
+        });
+    }
+
+    // Toggle Collapsible Sample Pills Tray with Arrow Rotation
+    const reportSampleToggle = document.getElementById('report-sample-toggle');
+    if (reportSampleToggle) {
+        reportSampleToggle.addEventListener('click', () => {
+            const pills = document.getElementById('report-sample-buttons');
+            if (pills) {
+                const isCollapsed = pills.classList.toggle('collapsed');
+                reportSampleToggle.classList.toggle('expanded', !isCollapsed);
+                const txt = reportSampleToggle.querySelector('.toggle-text');
+                if (txt) txt.textContent = isCollapsed ? 'All Samples' : 'Hide Samples';
+            }
+        });
+    }
+
     loadSampleReports();
 
     // Dropzone Click & Drag Events
@@ -1005,12 +1053,52 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/sample-texts');
             if (!res.ok) throw new Error();
-            allAbstractSamples = await res.json();
+                        allAbstractSamples = await res.json();
+            populateAbstractSampleDropdown();
             renderAbstractSampleButtons(activeAbstractFilter);
         } catch (err) {
             sampleButtonsContainer.innerHTML = '<span class="sample-pill-loading">Failed to load samples</span>';
         }
     }
+    
+    // Populate Abstract Sample Dropdown (Space-Saving Arrow Down Selector)
+    function populateAbstractSampleDropdown() {
+        const select = document.getElementById('abstract-sample-select');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select a sample abstract... ▼</option>';
+        allAbstractSamples.forEach((s, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.textContent = `[${s.category}] ${s.title}`;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', () => {
+            const val = select.value;
+            if (val !== '' && allAbstractSamples[val]) {
+                const s = allAbstractSamples[val];
+                abstractInput.value = s.text;
+                updateAbstractCounters();
+                hideAbstractError();
+                showToast(`Loaded: ${s.title}`, 'info', 2200);
+            }
+        });
+    }
+
+    // Toggle Collapsible Abstract Sample Pills Tray with Arrow Rotation
+    const abstractSampleToggle = document.getElementById('abstract-sample-toggle');
+    if (abstractSampleToggle) {
+        abstractSampleToggle.addEventListener('click', () => {
+            const pills = document.getElementById('sample-buttons');
+            if (pills) {
+                const isCollapsed = pills.classList.toggle('collapsed');
+                abstractSampleToggle.classList.toggle('expanded', !isCollapsed);
+                const txt = abstractSampleToggle.querySelector('.toggle-text');
+                if (txt) txt.textContent = isCollapsed ? 'All Samples' : 'Hide Samples';
+            }
+        });
+    }
+
     loadAbstractSamples();
 
     // Clear Abstract

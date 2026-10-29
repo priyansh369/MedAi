@@ -3002,3 +3002,131 @@ html, body {
         padding: 8px 10px !important;
     }
 }
+
+
+/* ==========================================================================
+   Space-Saving Collapsible Sample Selector & Arrow-Down Toggle Styling
+   ========================================================================== */
+.sample-header-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-bottom: 8px !important;
+}
+
+.sample-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+}
+
+.sample-controls-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Compact Dropdown Selector with Arrow-Down */
+.sample-dropdown-select {
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    padding: 6px 30px 6px 10px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #1E293B;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.16s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 200px;
+    max-width: 270px;
+    height: 32px;
+}
+
+.sample-dropdown-select:hover,
+.sample-dropdown-select:focus {
+    border-color: #00A896;
+    box-shadow: 0 0 0 2px rgba(0, 168, 150, 0.15);
+}
+
+/* Toggle Arrow-Down Button */
+.btn-toggle-samples {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 5px 10px !important;
+    height: 32px !important;
+    background: #F1F5F9 !important;
+    color: #334155 !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+    font-size: 0.76rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+
+.btn-toggle-samples:hover {
+    background: #E2E8F0 !important;
+    color: #0F172A !important;
+    border-color: #94A3B8 !important;
+}
+
+.btn-toggle-samples .arrow-down-icon {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-toggle-samples.expanded {
+    background: #E6FFFA !important;
+    color: #007A6C !important;
+    border-color: #38B2AC !important;
+}
+
+.btn-toggle-samples.expanded .arrow-down-icon {
+    transform: rotate(180deg) !important;
+}
+
+/* Collapsible Pills Drawer (Zero Height when collapsed) */
+.sample-pills-collapsible {
+    transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, margin 0.2s ease !important;
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    margin-top: 8px !important;
+}
+
+.sample-pills-collapsible.collapsed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    pointer-events: none !important;
+}
+
+@media (max-width: 1023px) {
+    .sample-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+    .sample-controls-right {
+        width: 100% !important;
+    }
+    .sample-dropdown-select {
+        flex: 1 !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+}

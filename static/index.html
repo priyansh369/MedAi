@@ -120,15 +120,26 @@
                     <!-- Quick Sample Reports with Language Filter Tabs -->
                     <div class="sample-section">
                         <div class="sample-header-row">
-                            <span class="sample-label">Quick Test Samples:</span>
-                            <div class="filter-tab-group" id="report-sample-filters">
-                                <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
-                                <button type="button" class="sample-filter-btn" data-filter="English">English</button>
-                                <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
-                                <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                            <div class="sample-header-left">
+                                <span class="sample-label">Quick Test Samples:</span>
+                                <div class="filter-tab-group" id="report-sample-filters">
+                                    <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="English">English</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                                </div>
+                            </div>
+                            <div class="sample-controls-right">
+                                <select id="report-sample-select" class="sample-dropdown-select" title="Choose a sample medical report">
+                                    <option value="">Select a sample report... ▼</option>
+                                </select>
+                                <button type="button" class="btn-toggle-samples" id="report-sample-toggle" title="Expand or collapse sample buttons">
+                                    <span class="toggle-text">All Samples</span>
+                                    <svg class="arrow-down-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="sample-pills" id="report-sample-buttons">
+                        <div class="sample-pills sample-pills-collapsible collapsed" id="report-sample-buttons">
                             <!-- Populated dynamically via JS -->
                             <button class="sample-pill-loading" disabled>Loading report samples...</button>
                         </div>
@@ -477,18 +488,29 @@
                         </div>
                     </div>
 
-                    <!-- Sample Abstracts Buttons with Language Filter Tabs -->
+                    <!-- Sample Abstracts Buttons with Dropdown & Collapsible Arrow-Down Drawer -->
                     <div class="sample-section">
                         <div class="sample-header-row">
-                            <span class="sample-label">Quick Test Abstract Samples:</span>
-                            <div class="filter-tab-group" id="abstract-sample-filters">
-                                <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
-                                <button type="button" class="sample-filter-btn" data-filter="English">English</button>
-                                <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
-                                <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                            <div class="sample-header-left">
+                                <span class="sample-label">Quick Test Abstract Samples:</span>
+                                <div class="filter-tab-group" id="abstract-sample-filters">
+                                    <button type="button" class="sample-filter-btn active" data-filter="all">All</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="English">English</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="Hinglish">Hinglish</button>
+                                    <button type="button" class="sample-filter-btn" data-filter="Gujlish">Gujlish</button>
+                                </div>
+                            </div>
+                            <div class="sample-controls-right">
+                                <select id="abstract-sample-select" class="sample-dropdown-select" title="Choose a sample research abstract">
+                                    <option value="">Select a sample abstract... ▼</option>
+                                </select>
+                                <button type="button" class="btn-toggle-samples" id="abstract-sample-toggle" title="Expand or collapse sample buttons">
+                                    <span class="toggle-text">All Samples</span>
+                                    <svg class="arrow-down-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="sample-pills" id="sample-buttons">
+                        <div class="sample-pills sample-pills-collapsible collapsed" id="sample-buttons">
                             <!-- Populated dynamically via JS -->
                             <button class="sample-pill-loading" disabled>Loading samples...</button>
                         </div>
