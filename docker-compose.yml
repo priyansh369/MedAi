@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: medreport-ai
+    container_name: medoryx-ai
     restart: unless-stopped
     ports:
       - "8000:8000"

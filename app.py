@@ -39,7 +39,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
-logger = logging.getLogger("medreport")
+logger = logging.getLogger("medoryx")
 
 SERVER_START_TIME = time.time()
 
@@ -51,7 +51,7 @@ DATA_DIR = BASE_DIR / "data"
 
 # Create FastAPI application
 app = FastAPI(
-    title="MedReport AI — Clinical Report Assistant & NLP Classifier",
+    title="Medoryx AI — Clinical Report Assistant & NLP Classifier",
     description="Full-stack healthcare NLP platform for clinical pathology interpretation, sonography explanation, and research abstract classification.",
     version="2.0.0",
     docs_url="/docs",
@@ -136,7 +136,7 @@ def health_check():
     uptime_sec = round(time.time() - SERVER_START_TIME, 2)
     return {
         "status": "healthy" if is_healthy else "degraded",
-        "service": "MedReport AI",
+        "service": "Medoryx AI",
         "version": "2.0.0",
         "uptime_seconds": uptime_sec,
         "environment": os.getenv("ENVIRONMENT", "production"),

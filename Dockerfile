@@ -1,4 +1,4 @@
-# Multi-stage production Dockerfile for MedReport AI
+# Multi-stage production Dockerfile for Medoryx AI
 # Stage 1: Build stage
 FROM python:3.10-slim as builder
 

@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let lines = [];
         if (isWhatsApp) {
-            lines.push(`*🏥 MEDREPORT AI — CLINICAL PATIENT SUMMARY*`);
+            lines.push(`*🏥 MEDORYX AI — CLINICAL PATIENT SUMMARY*`);
             lines.push(`📅 *Date:* ${dateStr}`);
             lines.push(`📋 *Investigation:* ${typeName}\n`);
         } else {
-            lines.push(`=== MEDREPORT AI - CLINICAL SUMMARY ===`);
+            lines.push(`=== MEDORYX AI - CLINICAL SUMMARY ===`);
             lines.push(`Date: ${dateStr}`);
             lines.push(`Report Type: ${typeName}`);
         }
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isWhatsApp) {
             lines.push(`\n_⚠️ Note: Automated AI summary for physician verification. Not an unconditional prescription._`);
-            lines.push(`🌐 _Verified via MedReport AI Platform_`);
+            lines.push(`🌐 _Verified via Medoryx AI Platform_`);
         } else {
             lines.push(`\nNotice: For clinical verification only. Consult a certified medical doctor.`);
         }
@@ -220,12 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const model = document.getElementById('res-model-name')?.textContent || '';
 
                 const lines = [
-                    `*🧠 MEDREPORT AI — NLP CLASSIFICATION REPORT*`,
+                    `*🧠 MEDORYX AI — NLP CLASSIFICATION REPORT*`,
                     `📅 *Date:* ${new Date().toLocaleDateString('en-GB')}`,
                     `\n🎯 *Predicted Category:* ${catName}`,
                     `📖 *Clinical Scope:* ${catDesc}`,
                     `⚙️ *Model Engine:* ${model}`,
-                    `\n_⚠️ Generated via MedReport AI Biomedical NLP Classifier_`
+                    `\n_⚠️ Generated via Medoryx AI Biomedical NLP Classifier_`
                 ];
 
                 const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(lines.join('\n'))}`;
